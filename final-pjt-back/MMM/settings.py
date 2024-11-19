@@ -66,6 +66,8 @@ CORS_ALLOWED_ORIGINS = [
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # 반드시 가장 위에 추가
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
