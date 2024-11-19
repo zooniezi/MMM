@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 
 # Create your models here.
 class Experience(models.Model):
-    user_id = models.ManyToManyField(get_user_model())
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     movie_id = models.IntegerField()
     genre_ids = models.JSONField(blank = True, null= True)
     watch_date = models.DateField(auto_now=False, auto_now_add=False)
