@@ -10,7 +10,7 @@ from django.shortcuts import render, get_list_or_404, get_object_or_404
 
 #############구분선#####################
 # 회원탈퇴
-@api_view(['POST'])
+@api_view(['DELETE'])
 @permission_classes([IsAuthenticated]) # 인증된 사용자만 권한 허용
 def user_delete(request):
     request.user.delete()
