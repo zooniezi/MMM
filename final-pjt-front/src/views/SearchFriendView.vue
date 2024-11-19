@@ -1,6 +1,7 @@
 <template>
   <div>
-    <h1>home</h1>
+    <h1>searchFriend</h1>
+    
   </div>
 </template>
 
