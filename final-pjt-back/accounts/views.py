@@ -6,6 +6,8 @@ from rest_framework.permissions import *
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import render, get_list_or_404, get_object_or_404
 
+from .serializers import *
+
 # Create your views here.
 
 #############구분선#####################
@@ -19,3 +21,11 @@ def user_delete(request):
         }
     return Response(data, status=status.HTTP_204_NO_CONTENT)
 
+########################
+# 로그인시 유저 정보 조회
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_info(request, username):
+    user = get_object_or_404(User, username=username)
+    serializer = UserInfoSerializers(user)
+    return Response(serializer.data)
