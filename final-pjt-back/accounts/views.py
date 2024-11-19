@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.contrib.auth import get_user_model
 
 from rest_framework import status
@@ -20,6 +21,46 @@ def user_delete(request):
             'content': f'{request.user}님의 탈퇴처리가 완료되었습니다.',
         }
     return Response(data, status=status.HTTP_204_NO_CONTENT)
+
+# 팔로우 기능
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def follow(request, username):
+    if request.method=='GET':
+        person = get_object_or_404(get_user_model(), username=username)
+        user = request.user
+
+        if person != user:
+            isFollowed = False
+            if person.followers.filter(pk=user.pk).exists():
+                isFollowed = True
+            return JsonResponse({'isFollowed': isFollowed})
+    
+    elif request.method == 'POST':
+        person = get_object_or_404(get_user_model(), username=username)
+        user = request.user
+        if person != user:         # 스스로를 팔로우 할 수는 없음
+            if person.followers.filter(pk=user.pk).exists():
+                # 팔로우 했었는데 다시 팔로우한다 = 언팔로우
+                person.followers.remove(user)
+                follow = True
+            else:
+                # 팔로우하지 않았었는데 팔로우한다 = 팔로우
+                person.followers.add(user)
+                follow = False
+            follow_status ={
+                'follow':follow,
+            }
+            return JsonResponse(follow_status)
+
+# 팔로우팔로워 정보 가져오기
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_follows(request, username):
+    user = get_object_or_404(User, username=username)
+    serializer = UserFollowSerializers(user, many=True)
+    return Response(serializer.data)
+
 
 ########################
 # 로그인시 유저 정보 조회
