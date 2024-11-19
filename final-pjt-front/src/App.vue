@@ -1,14 +1,10 @@
 <template>
-  <div>
-    <RouterLink :to="{ name: 'home' }">Home</RouterLink> |
-    <RouterLink :to="{ name: 'login' }">Home</RouterLink> |
-    <RouterLink :to="{ name: 'signup' }">Home</RouterLink> |
-  </div>
+  <AppNavbar />
   <RouterView />
 </template>
 
 <script setup>
-
+import AppNavbar from './components/AppNavbar.vue'
 </script>
 
 <style scoped>
