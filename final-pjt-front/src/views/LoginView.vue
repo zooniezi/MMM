@@ -2,15 +2,15 @@
   <div>
     <h1>로그인</h1>
     <form @submit.prevent="logIn">
-      <label for="username">username: </label>
+      <label for="username">아이디: </label>
       <input type="text" id="username" v-model.trim="username"><br>
 
-      <label for="password">password: </label>
+      <label for="password">비밀번호: </label>
       <input type="password" id="password" v-model.trim="password"><br>
 
-      <input type="submit" value="logIn">
+      <input type="submit" value="로그인하기">
       <p>
-        <span class="signup-link" @click="goToSignUp">새 계정을 만드시겠어요?</span>
+        <span class="signup-link" @click="goToSignUp">계정이 없으신가요?</span>
       </p>
     </form>
   </div>
@@ -19,7 +19,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useMovieStore } from '@/stores/movie'
-import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const username = ref(null)
@@ -32,6 +32,8 @@ const logIn = function () {
     username: username.value,
     password: password.value
   }
+  console.log('Login Payload:', payload);
+
   store.logIn(payload)
 }
 

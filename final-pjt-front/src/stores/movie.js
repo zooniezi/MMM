@@ -3,11 +3,13 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 
+// axios.defaults.xsrfCookieName = 'csrftoken'
+// axios.defaults.xsrfHeaderName = 'X-CSRFToken'
 
 export const useMovieStore = defineStore('movie', () => {
   const SERVER_API_URL = 'http://127.0.0.1:8000'
   const serverToken = ref(null)
-  // const serverToken = ref(1)
+
   const isLogin = computed(() => {
     if (serverToken.value === null) {
       return false
@@ -38,14 +40,30 @@ export const useMovieStore = defineStore('movie', () => {
         logIn({ username, password })
       })
       .catch((err) => {
-        console.log(err)
+        if (err.response && err.response.status === 400) {
+          console.log(err.response)
+          console.log(err.response.data)
+          if (err.response.data.username) {
+            alert("이미 존재하는 아이디입니다.")
+          }
+          if (err.response.data.password1) {
+            const passwordErrors = err.response.data.password1
+            if (passwordErrors.includes('This password is too common.')) {
+              alert("너무 흔한 비밀번호입니다.")
+            }
+            if (passwordErrors.includes('This password is too short. It must contain at least 8 characters.')) {
+              alert("비밀번호는 최소 8자 이상이어야 합니다.")
+            }
+          }
+          if (err.response.data.non_field_errors) {
+            alert("두 비밀번호가 일치하지 않습니다. 다시 입력해주세요.")
+          }
+        }
       })
   }
 
   // 로그인 요청 액션
   const logIn = function (payload) {
-    // const username = payload.username
-    // const password1 = payload.password
     const { username, password } = payload
 
     axios({
@@ -56,13 +74,13 @@ export const useMovieStore = defineStore('movie', () => {
       }
     })
       .then((res) => {
-        token.value = res.data.key
+        serverToken.value = res.data.key
         router.push({ name: 'home' })
-        // console.log(res.data)
-        // console.log('로그인 성공')
       })
       .catch((err) => {
-        console.log(err)
+        if (err.response && err.response.status === 400) {
+          alert("아이디 또는 비밀번호가 올바르지 않습니다. 다시 확인해주세요.")
+        }
       })
   }
   
@@ -74,8 +92,8 @@ export const useMovieStore = defineStore('movie', () => {
     })
       .then((res) => {
         console.log(res.data)
-        token.value = null
-        router.push({ name: 'home' })
+        serverToken.value = null
+        router.push({ name: 'logIn' })
       })
       .catch((err) => {
         console.log(err)
