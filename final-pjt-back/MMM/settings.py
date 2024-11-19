@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'dj_rest_auth',
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
     # registration
     'allauth',
     'allauth.account',
@@ -58,6 +59,10 @@ REST_FRAMEWORK = {
     ),
 }
 
+CORS_ALLOWED_ORIGINS = [
+    'http://127.0.0.1:5173',
+    'http://localhost:5173',
+]
 
 
 MIDDLEWARE = [
