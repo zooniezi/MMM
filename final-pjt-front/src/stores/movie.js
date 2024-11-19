@@ -100,4 +100,4 @@ export const useMovieStore = defineStore('movie', () => {
   }
 
   return { SERVER_API_URL, serverToken, isLogin, userName, signUp, logIn, logOut }
-})
+}, { persist: true })
