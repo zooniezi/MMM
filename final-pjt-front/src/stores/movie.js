@@ -3,12 +3,10 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 
-// axios.defaults.xsrfCookieName = 'csrftoken'
-// axios.defaults.xsrfHeaderName = 'X-CSRFToken'
-
 export const useMovieStore = defineStore('movie', () => {
   const SERVER_API_URL = 'http://127.0.0.1:8000'
   const serverToken = ref(null)
+  const userName = ref(null)
 
   const isLogin = computed(() => {
     if (serverToken.value === null) {
@@ -75,6 +73,7 @@ export const useMovieStore = defineStore('movie', () => {
     })
       .then((res) => {
         serverToken.value = res.data.key
+        userName.value = username
         router.push({ name: 'home' })
       })
       .catch((err) => {
@@ -100,5 +99,5 @@ export const useMovieStore = defineStore('movie', () => {
       })
   }
 
-  return { SERVER_API_URL, serverToken, isLogin, signUp, logIn, logOut }
+  return { SERVER_API_URL, serverToken, isLogin, userName, signUp, logIn, logOut }
 })

@@ -38,19 +38,18 @@ const router = createRouter({
     },
     {
       path: '/create-feed',
-      name: 'createFeed',
+      // name: 'createFeed', // 이름 추가
       component: CreateFeedView,
       children: [
         {
-          path: '',
-          name: 'createFeedMovie',
-          component: CreateFeedMovie, // 기본 화면: 영화 검색
+          path: '', // 기본 자식 라우트
+          name: 'createFeed',
+          component: CreateFeedMovie,
         },
         {
           path: 'info/:id',
           name: 'createFeedInfo',
-          component: CreateFeedInfo, // 상세 화면: 영화 정보
-          props: true, // 라우트 파라미터를 props로 전달
+          component: CreateFeedInfo,
         },
       ],
     },
@@ -77,22 +76,25 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to) => {
+router.beforeEach((to, from, next) => {
+  console.log('네비게이션 가드 실행됨:', to.name)
   const store = useMovieStore()
-  const isAuthenticated = store.isLogin // 로그인 여부 확인
+  const isAuthenticated = store.isLogin
 
-  // 보호된 경로 설정: 로그인과 회원가입 페이지를 제외한 모든 페이지
   const publicPages = ['logIn', 'signUp']
   const authRequired = !publicPages.includes(to.name)
 
   if (authRequired && !isAuthenticated) {
-    return { name: 'logIn' }
+    console.log('로그인 필요:', to.name)
+    return next({ name: 'logIn' })
   }
 
-  // 로그인 상태에서는 로그인/회원가입 페이지로 접근 차단
   if ((to.name === 'logIn' || to.name === 'signUp') && isAuthenticated) {
-    return { name: 'home' }
+    console.log('이미 로그인 상태:', to.name)
+    return next({ name: 'home' })
   }
+
+  next()
 })
 
 export default router
