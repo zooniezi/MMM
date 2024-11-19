@@ -1,13 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useMovieStore } from '@/stores/movie'
+
 import HomeView from '../views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 import SignUpView from '@/views/SignUpView.vue'
-import { useMovieStore } from '@/stores/movie'
 import CreateFeedView from '@/views/CreateFeedView.vue'
 import EditUserView from '@/views/EditUserView.vue'
 import RecommendView from '@/views/RecommendView.vue'
 import SearchFriendView from '@/views/SearchFriendView.vue'
 import MyPageView from '@/views/MyPageView.vue'
+
+import CreateFeedMovie from '@/components/CreateFeedMovie.vue'
+import CreateFeedInfo from '@/components/CreateFeedInfo.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -36,6 +40,19 @@ const router = createRouter({
       path: '/create-feed',
       name: 'createFeed',
       component: CreateFeedView,
+      children: [
+        {
+          path: '',
+          name: 'createFeedMovie',
+          component: CreateFeedMovie, // 기본 화면: 영화 검색
+        },
+        {
+          path: 'info/:id',
+          name: 'createFeedInfo',
+          component: CreateFeedInfo, // 상세 화면: 영화 정보
+          props: true, // 라우트 파라미터를 props로 전달
+        },
+      ],
     },
     {
       path: '/edit-user',
