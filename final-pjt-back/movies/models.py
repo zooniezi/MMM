@@ -14,3 +14,5 @@ class Experience(models.Model):
     rating = models.IntegerField()
     comment = models.TextField()
     is_share_to_feed = models.BooleanField()
+
+
