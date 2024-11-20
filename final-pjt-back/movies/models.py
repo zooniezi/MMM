@@ -15,4 +15,15 @@ class Feed(models.Model):
     comment = models.TextField()
     is_share_to_feed = models.BooleanField()
 
+class Movie(models.Model):
+    id = models.IntegerField(primary_key=True)  # 영화 ID
+    original_title = models.CharField(max_length=255)  # 원제
+    overview = models.TextField()  # 줄거리
+    poster_path = models.CharField(max_length=255, blank=True, null=True)  # 포스터 경로
+    title = models.CharField(max_length=255)  # 영화 제목
+    vote_average = models.FloatField()  # 평점
+
+    def __str__(self):
+        return self.title
+
 
