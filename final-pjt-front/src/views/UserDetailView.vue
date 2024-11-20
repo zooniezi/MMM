@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>searchFriend</h1>
+    <h1>유저 정보 {{  }}</h1>
     
   </div>
 </template>

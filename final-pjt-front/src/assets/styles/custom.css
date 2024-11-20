@@ -1,0 +1,41 @@
+/* 기본 배경 */
+body {
+  background-color: #FAEEE0; /* 전체 배경색 */
+  color: #333333; /* 텍스트 기본 색상 */
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* 컨테이너 스타일 */
+.main-content {
+  padding: 20px;
+  background-color: #FFFFFF; /* 카드 스타일 배경 */
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 15px;
+  }
+}
+
+/* src/assets/styles/custom.css */
+
+body {
+  font-family: 'Quicksand', sans-serif; /* 기본 폰트 */
+  color: #303841; /* 텍스트 색상 */
+}
+
+h1, h2, h3 {
+  color: #FF8A5B;
+}
+
+p {
+  font-family: 'Roboto Slab', serif; /* 감성적인 본문 폰트 */
+  line-height: 1.6;
+}
+
+

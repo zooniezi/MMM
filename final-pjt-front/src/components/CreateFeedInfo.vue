@@ -166,7 +166,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, toRaw } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import { useMovieStore } from '@/stores/movie'
@@ -182,7 +182,6 @@ const BASE_URL = 'https://api.themoviedb.org/3'
 const movie = ref(null)
 const isLoading = ref(true)
 const userId = ref(null)
-const movieGenres = ref([])
 
 // 단계별 폼 관리
 const currentStep = ref(1) // 현재 단계
@@ -197,14 +196,14 @@ const rating = ref(0)
 const comment = ref('')
 const isShareToFeed = ref(false)
 
-// 이미지 URL 생성
+// 이미지 URL 생성(완료)
 const getImageUrl = (path) => {
   return path
     ? `https://image.tmdb.org/t/p/w500${path}`
     : 'https://via.placeholder.com/500x750?text=No+Image'
 }
 
-// 사용자 ID 가져오기
+// 사용자 ID 가져오기(완료)
 const getUserId = function () {
   axios({
     method: 'get',
@@ -217,11 +216,11 @@ const getUserId = function () {
       userId.value = res.data.id
     })
     .catch((err) => {
-      console.error('유저 정보를 가져오는 데 실패했습니다:', err)
+      console.error(err)
     })
 }
 
-// 영화 정보 API 호출
+// 영화 정보 API 호출(완료)
 const fetchMovieDetails = async (id) => {
   try {
     const response = await axios.get(`${BASE_URL}/movie/${id}`, {
@@ -233,7 +232,7 @@ const fetchMovieDetails = async (id) => {
       },
     })
     movie.value = response.data
-    movieGenres.value = movie.value.genres.map((genre) => genre.id)
+    // console.log(movie.value)
   } catch (error) {
     console.error('영화 정보 불러오기 실패:', error)
     movie.value = null
@@ -242,7 +241,9 @@ const fetchMovieDetails = async (id) => {
   }
 }
 
-// 단계 이동
+
+
+// 단계 이동(완료)
 const nextStep = () => {
   if (currentStep.value < 8) currentStep.value++
 }
@@ -250,45 +251,88 @@ const previousStep = () => {
   if (currentStep.value > 1) currentStep.value--
 }
 
-// 뒤로 가기
+// 뒤로 가기(완료)
 const goBack = () => {
   router.back()
 }
 
-// 피드 추가
+// 피드 추가 API 요청(미완)
+// API URL 부분만 바꾸면 됨
 const addFeed = function () {
+  // addMovie 부분 옮길 것 (지금은 데이터 확인을 위해서 여기에)
+  // addMovie()
+  const rawMovie = toRaw(movie.value)
+  const genreIds = rawMovie.genres.map((genre) => genre.id)
+  const rawWatchReason = toRaw(watchReason.value)
+
   const payload = {
-    user_id: userId.value,
+    user: userId.value,
     movie_id: movieId,
-    genre_ids: movieGenres.value,
+    genre_ids: genreIds,
     watch_date: watchDate.value,
     watch_time: watchTime.value,
     watch_place: watchPlace.value,
     watch_with_who: watchWithWho.value,
-    watch_reason: watchReason.value,
+    watch_reason: rawWatchReason,
     rating: rating.value,
     comment: comment.value,
     is_share_to_feed: isShareToFeed.value,
   }
 
+  // console.log(payload)
+
   axios({
     method: 'post',
-    url: `${store.SERVER_API_URL}/feeds/`,
+    url: `${store.SERVER_API_URL}/movies/feed/create/`,
     headers: {
       Authorization: `Token ${store.serverToken}`,
+      'Content-Type': 'application/json',
     },
     data: payload,
   })
     .then((res) => {
       console.log('피드 추가 성공:', res.data)
-      router.push('/feeds')
+      router.push({ name: 'home' })
     })
     .catch((err) => {
       console.error('피드 추가 실패:', err)
     })
 }
 
-// 컴포넌트 마운트 시 데이터 로드
+// 영화 추가 API 요청(미완)
+// API URL 부분만 바꾸면 됨
+const addMovie = function () {
+  const rawMovie = toRaw(movie.value)
+
+  const payload = {
+    id: rawMovie.id,
+    original_title: rawMovie.original_title,
+    overview: rawMovie.overview,
+    title: rawMovie.title,
+    vote_average: rawMovie.vote_average,
+    poster_path: rawMovie.poster_path,
+  }
+
+  // console.log(payload)
+
+  axios({
+    method: 'post',
+    url: `${store.SERVER_API_URL}/add-movie/`,
+    headers: {
+      Authorization: `Token ${store.serverToken}`,
+    },
+    data: payload,
+  })
+    .then((res) => {
+      console.log('영화 추가 성공:', res.data)
+      router.push({ name: 'home' })
+    })
+    .catch((err) => {
+      console.error('영화 추가 실패:', err)
+    })
+}
+
+// 컴포넌트 마운트 시 데이터 로드(완료)
 onMounted(() => {
   getUserId()
   if (movieId) {
