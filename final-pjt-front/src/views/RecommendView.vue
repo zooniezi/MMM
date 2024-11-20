@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>recommend</h1>
+    <h1>영화 추천</h1>
   </div>
 </template>
 

@@ -1,14 +1,14 @@
 <template>
-  <div>
-    <h1>로그인</h1>
-    <form @submit.prevent="logIn">
-      <label for="username">아이디: </label>
-      <input type="text" id="username" v-model.trim="username"><br>
+  <div class="login-container">
+    <h1 class="login-title">로그인</h1>
+    <form @submit.prevent="logIn" class="login-form">
+      <label for="username" class="form-label">아이디: </label>
+      <input type="text" id="username" v-model.trim="username" class="form-input"><br>
 
-      <label for="password">비밀번호: </label>
-      <input type="password" id="password" v-model.trim="password"><br>
+      <label for="password" class="form-label">비밀번호: </label>
+      <input type="password" id="password" v-model.trim="password" class="form-input"><br>
 
-      <input type="submit" value="로그인하기">
+      <input type="submit" value="로그인하기" class="submit-button">
       <p>
         <span class="signup-link" @click="goToSignUp">계정이 없으신가요?</span>
       </p>
@@ -32,7 +32,6 @@ const logIn = function () {
     username: username.value,
     password: password.value
   }
-  console.log('Login Payload:', payload);
 
   store.logIn(payload)
 }
@@ -44,11 +43,5 @@ const goToSignUp = () => {
 </script>
 
 <style scoped>
-.signup-link {
-  color: blue;
-  cursor: pointer;
-}
-.signup-link:hover {
-  color: darkblue;
-}
+
 </style>

@@ -7,11 +7,13 @@ import SignUpView from '@/views/SignUpView.vue'
 import CreateFeedView from '@/views/CreateFeedView.vue'
 import EditUserView from '@/views/EditUserView.vue'
 import RecommendView from '@/views/RecommendView.vue'
-import SearchFriendView from '@/views/SearchFriendView.vue'
+import SearchUserView from '@/views/SearchUserView.vue'
 import MyPageView from '@/views/MyPageView.vue'
+import UserDetailView from '@/views/UserDetailView.vue'
 
 import CreateFeedMovie from '@/components/CreateFeedMovie.vue'
 import CreateFeedInfo from '@/components/CreateFeedInfo.vue'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,11 +40,11 @@ const router = createRouter({
     },
     {
       path: '/create-feed',
-      // name: 'createFeed', // 이름 추가
+      // name: 'createFeed',
       component: CreateFeedView,
       children: [
         {
-          path: '', // 기본 자식 라우트
+          path: '',
           name: 'createFeed',
           component: CreateFeedMovie,
         },
@@ -64,20 +66,25 @@ const router = createRouter({
       component: RecommendView,
     },
     {
-      path: '/search-friend',
-      name: 'searchFriend',
-      component: SearchFriendView,
+      path: '/search-user',
+      name: 'searchUser',
+      component: SearchUserView,
     },
     {
       path: '/my-page',
       name: 'myPage',
       component: MyPageView,
     },
+    {
+      path: '/user/:id',
+      name: 'userDetail',
+      component: UserDetailView,
+    },
   ]
 })
 
+// 비로그인/로그인 기준 페이지 접근 제한 기능(완료)
 router.beforeEach((to, from, next) => {
-  console.log('네비게이션 가드 실행됨:', to.name)
   const store = useMovieStore()
   const isAuthenticated = store.isLogin
 
@@ -85,15 +92,12 @@ router.beforeEach((to, from, next) => {
   const authRequired = !publicPages.includes(to.name)
 
   if (authRequired && !isAuthenticated) {
-    console.log('로그인 필요:', to.name)
     return next({ name: 'logIn' })
   }
 
   if ((to.name === 'logIn' || to.name === 'signUp') && isAuthenticated) {
-    console.log('이미 로그인 상태:', to.name)
     return next({ name: 'home' })
   }
-
   next()
 })
 
