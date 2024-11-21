@@ -1,7 +1,7 @@
 <template>
   <div class="signup-container">
     <p class="login-link">
-      이미 계정이 있으신가요? <RouterLink to="{ name: 'logIn' }" class="link">로그인</RouterLink>
+      이미 계정이 있으신가요? <span @click="goToLogIn" class="link">로그인</span>
     </p>
     <h1 class="signup-title">회원가입</h1>
     <form @submit.prevent="signUp" class="signup-form">
@@ -22,14 +22,18 @@
 <script setup>
 import { ref } from 'vue'
 import { useMovieStore } from '@/stores/movie'
-import { RouterLink } from 'vue-router';
+import { useRouter } from 'vue-router'
 
-const username = ref(null)
-const password1 = ref(null)
-const password2 = ref(null)
-
+// Router 및 상태 관리 초기화
+const router = useRouter()
 const store = useMovieStore()
 
+// 회원가입 폼 입력값
+const username = ref('')
+const password1 = ref('')
+const password2 = ref('')
+
+// 회원가입 함수
 const signUp = function () {
   const payload = {
     username: username.value,
@@ -37,6 +41,11 @@ const signUp = function () {
     password2: password2.value
   }
   store.signUp(payload)
+}
+
+// 로그인 페이지로 이동
+const goToLogIn = function () {
+  router.push({ name: 'logIn' })
 }
 </script>
 

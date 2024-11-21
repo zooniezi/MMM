@@ -11,19 +11,19 @@
       <label>시청 시간:</label>
       <div>
         <label>
-          <input type="radio" value="morning" v-model="watchTime" />
+          <input type="radio" value="오전" v-model="watchTime" />
           오전
         </label>
         <label>
-          <input type="radio" value="afternoon" v-model="watchTime" />
+          <input type="radio" value="오후" v-model="watchTime" />
           오후
         </label>
         <label>
-          <input type="radio" value="evening" v-model="watchTime" />
+          <input type="radio" value="저녁" v-model="watchTime" />
           저녁
         </label>
         <label>
-          <input type="radio" value="night" v-model="watchTime" />
+          <input type="radio" value="밤" v-model="watchTime" />
           밤
         </label>
       </div>
@@ -36,19 +36,19 @@
       <label>시청 장소:</label>
       <div>
         <label>
-          <input type="radio" value="movie_theater" v-model="watchPlace" />
+          <input type="radio" value="영화관" v-model="watchPlace" />
           영화관
         </label>
         <label>
-          <input type="radio" value="home" v-model="watchPlace" />
+          <input type="radio" value="집" v-model="watchPlace" />
           집
         </label>
         <label>
-          <input type="radio" value="friend_home" v-model="watchPlace" />
-          친구 집
+          <input type="radio" value="야외" v-model="watchPlace" />
+          야외
         </label>
         <label>
-          <input type="radio" value="other" v-model="watchPlace" />
+          <input type="radio" value="기타" v-model="watchPlace" />
           기타
         </label>
       </div>
@@ -61,23 +61,23 @@
       <label>함께 본 사람:</label>
       <div>
         <label>
-          <input type="radio" value="alone" v-model="watchWithWho" />
+          <input type="radio" value="혼자" v-model="watchWithWho" />
           혼자
         </label>
         <label>
-          <input type="radio" value="family" v-model="watchWithWho" />
+          <input type="radio" value="가족" v-model="watchWithWho" />
           가족
         </label>
         <label>
-          <input type="radio" value="friend" v-model="watchWithWho" />
+          <input type="radio" value="친구" v-model="watchWithWho" />
           친구
         </label>
         <label>
-          <input type="radio" value="lover" v-model="watchWithWho" />
+          <input type="radio" value="연인" v-model="watchWithWho" />
           연인
         </label>
         <label>
-          <input type="radio" value="other" v-model="watchWithWho" />
+          <input type="radio" value="기타" v-model="watchWithWho" />
           기타
         </label>
       </div>
@@ -256,11 +256,8 @@ const goBack = () => {
   router.back()
 }
 
-// 피드 추가 API 요청(미완)
-// API URL 부분만 바꾸면 됨
+// 피드 추가 API 요청(완료)
 const addFeed = function () {
-  // addMovie 부분 옮길 것 (지금은 데이터 확인을 위해서 여기에)
-  // addMovie()
   const rawMovie = toRaw(movie.value)
   const genreIds = rawMovie.genres.map((genre) => genre.id)
   const rawWatchReason = toRaw(watchReason.value)
@@ -292,6 +289,7 @@ const addFeed = function () {
   })
     .then((res) => {
       console.log('피드 추가 성공:', res.data)
+      addMovie()
       router.push({ name: 'home' })
     })
     .catch((err) => {
@@ -299,8 +297,7 @@ const addFeed = function () {
     })
 }
 
-// 영화 추가 API 요청(미완)
-// API URL 부분만 바꾸면 됨
+// 영화 추가 API 요청(완료)
 const addMovie = function () {
   const rawMovie = toRaw(movie.value)
 
@@ -313,24 +310,33 @@ const addMovie = function () {
     poster_path: rawMovie.poster_path,
   }
 
-  // console.log(payload)
+  console.log('전송 페이로드:', payload) // 페이로드 확인
 
   axios({
     method: 'post',
-    url: `${store.SERVER_API_URL}/add-movie/`,
+    url: `${store.SERVER_API_URL}/movies/movie/create/`,
     headers: {
       Authorization: `Token ${store.serverToken}`,
+      'Content-Type': 'application/json', // Content-Type 명시
     },
     data: payload,
   })
     .then((res) => {
       console.log('영화 추가 성공:', res.data)
-      router.push({ name: 'home' })
     })
     .catch((err) => {
-      console.error('영화 추가 실패:', err)
+      if (err.response) {
+        console.error('에러 응답 데이터:', err.response.data)
+        console.error('에러 상태 코드:', err.response.status)
+        console.error('에러 헤더:', err.response.headers)
+      } else if (err.request) {
+        console.error('요청 오류:', err.request)
+      } else {
+        console.error('에러 메시지:', err.message)
+      }
     })
 }
+
 
 // 컴포넌트 마운트 시 데이터 로드(완료)
 onMounted(() => {

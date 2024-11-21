@@ -21,23 +21,25 @@ import { ref } from 'vue'
 import { useMovieStore } from '@/stores/movie'
 import { useRouter } from 'vue-router'
 
+// Router 및 상태 관리 초기화
 const router = useRouter()
-const username = ref(null)
-const password = ref(null)
-
 const store = useMovieStore()
 
+// 로그인 폼 입력값
+const username = ref('')
+const password = ref('')
+
+// 로그인 함수
 const logIn = function () {
   const payload = {
     username: username.value,
     password: password.value
   }
-
   store.logIn(payload)
 }
 
-// SignUp 페이지로 이동
-const goToSignUp = () => {
+// 회원가입 페이지로 이동
+const goToSignUp = function() {
   router.push({ name: 'signUp' })
 }
 </script>

@@ -1,11 +1,21 @@
 <template>
   <div>
-    <h1>마이페이지</h1>
+    <h1>{{ userName }}의 마이페이지</h1>
 
     <h2>프로필 부분</h2>
     <p>총 피드수: {{ totalFeeds }}</p>
-    <p>팔로워 수: {{ followerCount }}</p>
-    <p>팔로잉 수: {{ followingCount }}</p>
+    <p>
+      팔로워 수: 
+      <span class="link" @click="openFollowModal('followers')">
+        {{ followerCount }}
+      </span>
+    </p>
+    <p>
+      팔로잉 수: 
+      <span class="link" @click="openFollowModal('followings')">
+        {{ followingCount }}
+      </span>
+    </p>
 
     <h2>나의 피드</h2>
     <div class="feed-grid">
@@ -23,7 +33,7 @@
     <RouterLink :to="{ name: 'editUser' }">회원정보 수정</RouterLink><br>
     <button @click="goLogOut">로그아웃</button>
 
-    <!-- 모달 -->
+    <!-- 피드 상세 모달 -->
     <div v-if="selectedFeed" class="modal">
       <div class="modal-content">
         <span class="close" @click="closeModal">&times;</span>
@@ -37,13 +47,27 @@
         <p><strong>코멘트:</strong> {{ selectedFeed.comment }}</p>
       </div>
     </div>
+
+    <!-- 팔로워/팔로잉 목록 모달 -->
+    <div v-if="isFollowModalOpen" class="modal">
+      <div class="modal-content">
+        <span class="close" @click="closeFollowModal">&times;</span>
+        <h3>{{ followModalType === 'followers' ? '팔로워 목록' : '팔로잉 목록' }}</h3>
+        <ul>
+          <li v-for="user in followModalData" :key="user.id">
+            {{ user.username }}
+          </li>
+        </ul>
+      </div>
+    </div>
   </div>
 </template>
+
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useMovieStore } from '@/stores/movie'
-import { RouterLink } from 'vue-router'
+import axios from 'axios'
 
 const store = useMovieStore()
 const SERVER_API_URL = store.SERVER_API_URL
@@ -54,99 +78,19 @@ const followerCount = ref(0)
 const followingCount = ref(0)
 const isLoading = ref(false)
 const error = ref(null)
-// const feeds = ref([])
+const userName = store.userName
+const userId = ref(null)
+const feeds = ref([])
+
+// 팔로워/팔로잉 모달 상태
+const isFollowModalOpen = ref(false)
+const followModalType = ref('') // 'followers' 또는 'followings'
+const followModalData = ref([])
 
 // 역순 데이터 계산
 const reversedFeeds = computed(() => [...feeds.value].reverse())
 
-const feeds = ref([
-  {
-    "user": 1,
-    "movie_id": 1129598,
-    "genre_ids": [28, 53, 27],
-    "watch_date": "2024-11-01",
-    "watch_time": "morning",
-    "watch_place": "movie_theater",
-    "watch_with_who": "alone",
-    "watch_reason": ["재미있을 것 같아서", "추천을 받아서"],
-    "rating": 1,
-    "comment": "굳",
-    "is_share_to_feed": true,
-    "poster_path": '/3flIDcZF3tnR7m5OU2h7lLPQwmr.jpg',
-  },
-  {
-    "user": 1,
-    "movie_id": 27205,
-    "genre_ids": [28, 878, 12],
-    "watch_date": "2024-11-01",
-    "watch_time": "morning",
-    "watch_place": "home",
-    "watch_with_who": "alone",
-    "watch_reason": ["추천을 받아서"],
-    "rating": 4,
-    "comment": "꿀잼",
-    "is_share_to_feed": true,
-    "poster_path": '/wIrhEUBWjRmZuL1Ix41cF2LhJrW.jpg',
-  },
-  {
-    "user": 1,
-    "movie_id": 157336,
-    "genre_ids": [12, 18, 878],
-    "watch_date": "2024-11-13",
-    "watch_time": "evening",
-    "watch_place": "friend_home",
-    "watch_with_who": "alone",
-    "watch_reason": ["추천을 받아서"],
-    "rating": 4,
-    "comment": "다시보고싶다.",
-    "is_share_to_feed": true,
-    "poster_path": '/dcUmzoiHChYmtef2yEe06QcML5o.jpg',
-  },
-  {
-    "user": 1,
-    "movie_id": 157336,
-    "genre_ids": [12, 18, 878],
-    "watch_date": "2024-11-13",
-    "watch_time": "evening",
-    "watch_place": "friend_home",
-    "watch_with_who": "alone",
-    "watch_reason": ["추천을 받아서"],
-    "rating": 4,
-    "comment": "다시보고싶다.",
-    "is_share_to_feed": true,
-    "poster_path": '/wXNihLltMCGR7XepN39syIlCt5X.jpg',
-  },
-  {
-    "user": 1,
-    "movie_id": 157336,
-    "genre_ids": [12, 18, 878],
-    "watch_date": "2024-11-13",
-    "watch_time": "evening",
-    "watch_place": "friend_home",
-    "watch_with_who": "alone",
-    "watch_reason": ["추천을 받아서"],
-    "rating": 4,
-    "comment": "다시보고싶다.",
-    "is_share_to_feed": true,
-    "poster_path": '/oDVjlCTSyF6Fh8Fpm683MyGGnSG.jpg',
-  },
-  {
-    "user": 1,
-    "movie_id": 157336,
-    "genre_ids": [12, 18, 878],
-    "watch_date": "2024-11-13",
-    "watch_time": "evening",
-    "watch_place": "friend_home",
-    "watch_with_who": "alone",
-    "watch_reason": ["추천을 받아서"],
-    "rating": 4,
-    "comment": "다시보고싶다.",
-    "is_share_to_feed": true,
-    "poster_path": '/1VUExee8iFohFTwYVi4IOArYyaM.jpg',
-  },
-])
-
-// 이미지 가져오기(완료)
+// 이미지 가져오기
 const getImageUrl = (path) => {
   return path
     ? `https://image.tmdb.org/t/p/w500${path}`
@@ -167,56 +111,111 @@ const goLogOut = function () {
   store.logOut()
 }
 
+// 사용자 ID 가져오기
+const getUserId = async function () {
+  try {
+    const res = await axios({
+      method: 'get',
+      url: `${SERVER_API_URL}/accounts/userinfo/${store.userName}/`,
+      headers: {
+        Authorization: `Token ${store.serverToken}`,
+      },
+    });
+    userId.value = res.data.id;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+// 팔로우/팔로잉 정보 가져오기
+const fetchFollowData = async () => {
+  try {
+    const response = await axios.get(`${SERVER_API_URL}/accounts/follow/list/${userName}/`, {
+      headers: {
+        Authorization: `Token ${store.serverToken}`,
+      },
+    });
+    followerCount.value = response.data.follower_count;
+    followingCount.value = response.data.following_count;
+  } catch (err) {
+    console.error('팔로우/팔로잉 데이터를 가져오는 중 오류 발생:', err);
+    error.value = '팔로우/팔로잉 데이터를 가져오는 중 오류가 발생했습니다.';
+  }
+};
+
+// 특정 모달 데이터 가져오기
+const openFollowModal = async (type) => {
+  followModalType.value = type;
+  try {
+    const response = await axios.get(`${SERVER_API_URL}/accounts/follow/list/${userName}/`, {
+      headers: {
+        Authorization: `Token ${store.serverToken}`,
+      },
+    });
+    followModalData.value = response.data[type]; // followers 또는 followings
+    isFollowModalOpen.value = true;
+  } catch (err) {
+    console.error(`${type} 데이터를 가져오는 중 오류 발생:`, err);
+  }
+};
+
+// 모달 닫기
+const closeFollowModal = () => {
+  isFollowModalOpen.value = false;
+  followModalData.value = [];
+};
+
+// 해당 사용자의 피드 가져오기
 const fetchFeeds = async () => {
-  isLoading.value = true
-  error.value = null
+  isLoading.value = true;
+  error.value = null;
 
   try {
-    const response = await axios.get(`${store.SERVER_API_URL}/feeds/${store.userName}/`, {
+    const response = await axios.get(`${SERVER_API_URL}/movies/feeds/${store.userId}/`, {
       headers: {
-        Authorization: `Token ${store.serverToken}`, // 필요한 경우 인증 토큰 추가
+        Authorization: `Token ${store.serverToken}`,
       },
-    })
-    feeds.value = response.data // API 응답 데이터를 feeds에 저장
+    });
+    feeds.value = response.data;
   } catch (err) {
-    console.error('피드 데이터를 가져오는 중 오류 발생:', err)
-    error.value = '데이터를 가져오는 중 오류가 발생했습니다.'
+    console.error('피드 데이터를 가져오는 중 오류 발생:', err);
+    error.value = '데이터를 가져오는 중 오류가 발생했습니다.';
   } finally {
-    isLoading.value = false // 로딩 상태 종료
+    isLoading.value = false;
   }
-}
+};
 
 // 컴포넌트 마운트 시 API 호출
-onMounted(() => {
-  fetchFeeds()
-})
+onMounted(async () => {
+  await getUserId(); // 사용자 ID 가져오기
+  await fetchFeeds(); // 피드 가져오기
+  await fetchFollowData(); // 팔로워/팔로잉 정보 가져오기
+});
 </script>
+
+
 
 <style scoped>
 .feed-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3열 그리드 */
-  gap: 10px; /* 아이템 간격 */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
   margin-top: 20px;
 }
 
 .feed-item {
   width: 100%;
-  padding-top: 100%; /* 1:1 비율 유지 */
-  background-size: 110%; /* 약간 확대하여 마진 효과 */
-  background-position: center; /* 중앙 기준 */
-  background-repeat: no-repeat; /* 반복 방지 */
-  border-radius: 10px; /* 외곽 둥글게 */
-  overflow: hidden; /* 외곽 밖 이미지는 잘라냄 */
-  cursor: pointer; /* 클릭 가능 표시 */
-  transition: transform 0.3s, background-size 0.3s; /* 호버 효과 포함 */
+  padding-top: 100%;
+  background-size: cover;
+  background-position: center;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.3s;
 }
 
 .feed-item:hover {
-  transform: scale(1.05); /* 컨테이너 확대 */
-  /* background-size: 115%; */
+  transform: scale(1.05);
 }
-
 
 .modal {
   position: fixed;
@@ -245,6 +244,11 @@ onMounted(() => {
   right: 10px;
   cursor: pointer;
   font-size: 24px;
-  font-weight: bold;
+}
+
+.link {
+  cursor: pointer;
+  color: blue;
+  text-decoration: underline;
 }
 </style>

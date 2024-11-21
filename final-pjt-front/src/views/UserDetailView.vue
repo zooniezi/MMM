@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>{{ user?.name }}님의 피드</h1>
+    <h1>{{ userName }}님의 피드</h1>
     <div v-if="user">
       <button @click="toggleFollow" class="follow-btn">
         {{ isFollowing ? '언팔로우' : '팔로우' }}
@@ -9,6 +9,13 @@
     </div>
     <div v-else>
       <p>유저 정보를 찾을 수 없습니다.</p>
+    </div>
+    <div v-if="Object.keys(followData).length > 0">
+      <h2>팔로우/팔로워 정보</h2>
+      <div>
+        <p><strong>팔로워 수:</strong> {{ followData.follower_count }}</p>
+        <p><strong>팔로잉 수:</strong> {{ followData.following_count }}</p>
+      </div>
     </div>
 
     <div v-if="userFeeds.length > 0" class="feed-grid">
@@ -41,73 +48,32 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
+import { useMovieStore } from '@/stores/movie'
 
+// 스토어 및 라우터 초기화
+const store = useMovieStore()
 const route = useRoute()
+const router = useRouter()
 
-// 사용자 정보
-const users = ref([
-  { id: 1, name: 'Alice Johnson' },
-  { id: 2, name: 'Bob Smith' },
-  { id: 3, name: 'Charlie Brown' },
-  { id: 4, name: 'David Wilson' },
-  { id: 5, name: 'Eve Davis' },
-  { id: 6, name: 'Frank Miller' },
-])
+// 상태 변수
+const user = ref(null) // 현재 유저 데이터
+const userId = ref(0)
+const userName = route.params.username
+const userFeeds = ref([]) // 현재 유저의 피드
+const isFollowing = ref(false) // 팔로우 상태
+const selectedFeed = ref(null) // 모달에 표시할 피드
+const users = ref([]) // 전체 사용자 목록
+const loading = ref(false) // 로딩 상태
+const error = ref(null) // 에러 메시지
 
-// 피드 데이터
-const feeds = ref([
-  {
-    user: 1,
-    movie_id: 1129598,
-    watch_date: "2024-11-01",
-    watch_time: "morning",
-    watch_place: "movie_theater",
-    watch_with_who: "alone",
-    watch_reason: ["재미있을 것 같아서", "추천을 받아서"],
-    rating: 1,
-    comment: "굳",
-    is_share_to_feed: true,
-    poster_path: '/3flIDcZF3tnR7m5OU2h7lLPQwmr.jpg',
-  },
-  {
-    user: 2,
-    movie_id: 27205,
-    watch_date: "2024-11-01",
-    watch_time: "morning",
-    watch_place: "home",
-    watch_with_who: "alone",
-    watch_reason: ["추천을 받아서"],
-    rating: 4,
-    comment: "꿀잼",
-    is_share_to_feed: true,
-    poster_path: '/wIrhEUBWjRmZuL1Ix41cF2LhJrW.jpg',
-  },
-])
+// 현재 로그인한 사용자의 ID (스토어에서 가져오기)
+const currentUserId = store.userId // 스토어에 currentUserId가 있다고 가정
 
-// 현재 유저
-const userId = Number(route.params.id)
-const user = users.value.find((u) => u.id === userId)
-
-// 해당 유저의 피드 필터링
-const userFeeds = computed(() => feeds.value.filter(feed => feed.user === userId))
+// 피드 역순 정렬
 const reversedFeeds = computed(() => [...userFeeds.value].reverse())
-
-// 모달 상태
-const selectedFeed = ref(null)
-const openModal = (feed) => {
-  selectedFeed.value = feed
-}
-const closeModal = () => {
-  selectedFeed.value = null
-}
-
-// 팔로우 상태
-const isFollowing = ref(false)
-const toggleFollow = () => {
-  isFollowing.value = !isFollowing.value
-}
 
 // 이미지 경로
 const getImageUrl = (path) => {
@@ -115,6 +81,138 @@ const getImageUrl = (path) => {
     ? `https://image.tmdb.org/t/p/w500${path}`
     : 'https://via.placeholder.com/500x750?text=No+Image'
 }
+
+// 사용자 데이터 가져오기
+const fetchUsers = async () => {
+  try {
+    const response = await axios.get(`${store.SERVER_API_URL}/accounts/allusers/without_admin/`, {
+      headers: { Authorization: `Token ${store.serverToken}` },
+    });
+    users.value = response.data;
+  } catch (err) {
+    console.error('사용자 목록을 가져오는 데 실패했습니다:', err);
+    error.value = '사용자 목록을 가져오는 데 실패했습니다.';
+  }
+};
+
+// username으로 id 가져오기
+const getIdByUsername = (username) => {
+  const user = users.value.find(user => user.username === username);
+  return user ? user.id : null; // id가 없으면 null 반환
+};
+
+// 특정 사용자의 피드 가져오기
+const fetchUserFeeds = async (userId) => {
+  try {
+    loading.value = true;
+    const response = await axios.get(`${store.SERVER_API_URL}/movies/feeds/${userId}/`, {
+      headers: { Authorization: `Token ${store.serverToken}` },
+    });
+    userFeeds.value = response.data;
+  } catch (err) {
+    console.error('피드 데이터를 가져오는 중 오류 발생:', err);
+    error.value = '피드 데이터를 가져오는 중 오류가 발생했습니다.';
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 사용자 데이터와 피드 가져오기
+const fetchUserData = async () => {
+  try {
+    // 사용자 목록 가져오기
+    await fetchUsers();
+
+    // username으로 userId 가져오기
+    const targetUserId = getIdByUsername(userName);
+    if (!targetUserId) {
+      console.error('유효한 사용자 ID를 찾을 수 없습니다.');
+      user.value = null;
+      return;
+    }
+
+    userId.value = targetUserId;
+
+    // 해당 userId로 사용자 데이터 설정
+    user.value = users.value.find(u => u.id === targetUserId) || null;
+
+    // 해당 유저의 피드 가져오기
+    await fetchUserFeeds(targetUserId);
+
+    // 팔로우 상태 확인
+    await checkFollowStatus();
+  } catch (err) {
+    console.error('사용자 데이터와 피드를 가져오는 중 오류가 발생했습니다:', err);
+    error.value = '데이터를 가져오는 중 문제가 발생했습니다.';
+  }
+};
+
+// 모달 제어
+const openModal = (feed) => {
+  selectedFeed.value = feed
+}
+const closeModal = () => {
+  selectedFeed.value = null
+}
+
+// 팔로우 상태 확인
+const checkFollowStatus = async () => {
+  try {
+    const response = await axios.get(`${store.SERVER_API_URL}/accounts/follow/${userName}/`, {
+      headers: { Authorization: `Token ${store.serverToken}` },
+    });
+    isFollowing.value = response.data.isFollowed;
+  } catch (err) {
+    console.error('팔로우 상태 확인 중 오류 발생:', err);
+    error.value = '팔로우 상태를 확인할 수 없습니다.';
+  }
+};
+
+// 팔로우/언팔로우 토글
+const toggleFollow = async () => {
+  try {
+    const response = await axios.post(`${store.SERVER_API_URL}/accounts/follow/${userName}/`, null, {
+      headers: { Authorization: `Token ${store.serverToken}` },
+    });
+
+    // 팔로우 상태 업데이트
+    isFollowing.value = !isFollowing.value;
+
+    // 팔로워 수 업데이트
+    if (isFollowing.value) {
+      followData.value.follower_count += 1; // 팔로우하면 팔로워 수 증가
+      followData.value.followers.push({ id: currentUserId, username: store.currentUsername }); // 팔로워 리스트에 추가
+    } else {
+      followData.value.follower_count -= 1; // 언팔로우하면 팔로워 수 감소
+      followData.value.followers = followData.value.followers.filter(f => f.id !== currentUserId); // 팔로워 리스트에서 제거
+    }
+  } catch (err) {
+    console.error('팔로우 요청 중 오류 발생:', err);
+    error.value = '팔로우 요청 중 문제가 발생했습니다.';
+  }
+};
+
+
+// 팔로우/팔로워 정보 가져오기
+const followData = ref({}); // 팔로우/팔로워 정보 저장
+const fetchFollowData = async () => {
+  try {
+    const response = await axios.get(`${store.SERVER_API_URL}/accounts/follow/list/${userName}/`, {
+      headers: { Authorization: `Token ${store.serverToken}` },
+    });
+    followData.value = response.data; // API 응답 데이터 저장
+  } catch (err) {
+    console.error('팔로우/팔로워 정보를 가져오는 중 오류 발생:', err);
+    error.value = '팔로우/팔로워 정보를 가져오는 데 실패했습니다.';
+  }
+};
+
+
+// 컴포넌트 로드 시 데이터 가져오기
+onMounted(async () => {
+  await fetchUserData(); // 사용자 데이터 및 피드 가져오기
+  await fetchFollowData(); // 팔로우/팔로워 정보 가져오기
+});
 </script>
 
 <style scoped>
