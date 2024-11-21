@@ -14,4 +14,6 @@ urlpatterns = [
     path('delete/', views.user_delete, name='user_delete'), # 회원탈퇴
     path('follow/<str:username>/', views.follow, name='follow'),
     path('follow/list/<str:username>/', views.get_follows),
+    path('allusers/with_admin/', views.get_users_with_admin, name='get_users_with_admin'), # 관리자(superuser) 제외 모든 유저 id,username 리스트
+    path('allusers/without_admin/', views.get_users_without_admin, name='get_users_without_admin'), # 관리자(superuser) 포함 모든 유저 id,username 리스트
 ]

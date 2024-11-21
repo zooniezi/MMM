@@ -8,7 +8,7 @@ from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import render, get_list_or_404, get_object_or_404
 
 from .serializers import *
-
+from .models import User
 # Create your views here.
 
 #############구분선#####################
@@ -52,6 +52,21 @@ def follow(request, username):
                 'follow':follow,
             }
             return JsonResponse(follow_status)
+
+#################################################################################
+
+def get_users_with_admin(request):
+    # 필요한 필드만 선택적으로 가져오기
+    users = User.objects.values('id', 'username')
+    data = list(users)  # values()는 QuerySet을 반환하므로 list()로 변환
+
+    return JsonResponse(data, safe=False)
+
+def get_users_without_admin(request):
+    users = User.objects.filter(is_superuser=False).values('id', 'username')
+    data = list(users)
+    return JsonResponse(data, safe=False)
+
 
 # 팔로우팔로워 정보 가져오기
 @api_view(['GET'])
