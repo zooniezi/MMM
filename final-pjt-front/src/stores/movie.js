@@ -7,21 +7,16 @@ export const useMovieStore = defineStore('movie', () => {
   const SERVER_API_URL = 'http://127.0.0.1:8000'
   const serverToken = ref(null)
   const userName = ref(null)
+  const userId = ref(null) // userId 상태
 
   const isLogin = computed(() => {
-    if (serverToken.value === null) {
-      return false
-    } else {
-      return true
-    }
+    return serverToken.value !== null
   })
+
   const router = useRouter()
 
   // 회원가입 요청 액션
   const signUp = function (payload) {
-    // const username = payload.username
-    // const password1 = payload.password1
-    // const password2 = payload.password2
     const { username, password1, password2 } = payload
 
     axios({
@@ -31,16 +26,12 @@ export const useMovieStore = defineStore('movie', () => {
         username, password1, password2
       }
     })
-      .then((res) => {
-        // console.log(res)
-        // console.log('회원가입 성공')
+      .then(() => {
         const password = password1
         logIn({ username, password })
       })
       .catch((err) => {
         if (err.response && err.response.status === 400) {
-          console.log(err.response)
-          console.log(err.response.data)
           if (err.response.data.username) {
             alert("이미 존재하는 아이디입니다.")
           }
@@ -75,6 +66,8 @@ export const useMovieStore = defineStore('movie', () => {
         serverToken.value = res.data.key
         userName.value = username
         router.push({ name: 'home' })
+        // 로그인 후 사용자 ID 가져오기
+        fetchUserId()
       })
       .catch((err) => {
         if (err.response && err.response.status === 400) {
@@ -82,22 +75,68 @@ export const useMovieStore = defineStore('movie', () => {
         }
       })
   }
-  
-  // [추가기능] 로그아웃
+
+  // 로그아웃 요청 액션
   const logOut = function () {
     axios({
       method: 'post',
       url: `${SERVER_API_URL}/accounts/logout/`,
     })
-      .then((res) => {
-        console.log(res.data)
+      .then(() => {
         serverToken.value = null
+        userName.value = null
+        userId.value = null
         router.push({ name: 'logIn' })
       })
       .catch((err) => {
-        console.log(err)
+        console.error(err)
       })
   }
 
-  return { SERVER_API_URL, serverToken, isLogin, userName, signUp, logIn, logOut }
+  let isFetching = false // 중복 호출 방지 플래그
+
+  const fetchUserId = async function () {
+    if (!userName.value || !serverToken.value) {
+      console.error('UserName or ServerToken is not set. Cannot fetch userId.')
+      return
+    }
+
+    if (userId.value !== null || isFetching) {
+      console.log('UserId is already fetched or fetching is in progress.')
+      return
+    }
+
+    isFetching = true
+    try {
+      const res = await axios({
+        method: 'get',
+        url: `${SERVER_API_URL}/accounts/userinfo/${userName.value}/`,
+        headers: {
+          Authorization: `Token ${serverToken.value}`,
+        },
+      })
+      if (res.data && res.data.id) {
+        userId.value = res.data.id
+        console.log('Fetched UserId:', userId.value)
+      } else {
+        console.error('Invalid response structure:', res.data)
+      }
+    } catch (err) {
+      console.error('Failed to fetch UserId:', err)
+    } finally {
+      isFetching = false
+    }
+  }
+
+  return { 
+    SERVER_API_URL, 
+    serverToken, 
+    isLogin, 
+    userName, 
+    userId, 
+    signUp, 
+    logIn, 
+    logOut, 
+    fetchUserId 
+  }
 }, { persist: true })

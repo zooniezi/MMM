@@ -76,7 +76,7 @@ const router = createRouter({
       component: MyPageView,
     },
     {
-      path: '/user/:id',
+      path: '/user/:username',
       name: 'userDetail',
       component: UserDetailView,
     },

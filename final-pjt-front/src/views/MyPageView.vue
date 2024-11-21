@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>마이페이지</h1>
+    <h1>{{ userName }}의 마이페이지</h1>
 
     <h2>프로필 부분</h2>
     <p>총 피드수: {{ totalFeeds }}</p>
@@ -43,7 +43,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useMovieStore } from '@/stores/movie'
-import { RouterLink } from 'vue-router'
+import axios from 'axios'
 
 const store = useMovieStore()
 const SERVER_API_URL = store.SERVER_API_URL
@@ -54,97 +54,12 @@ const followerCount = ref(0)
 const followingCount = ref(0)
 const isLoading = ref(false)
 const error = ref(null)
-// const feeds = ref([])
+const userName = store.userName
+const userId = ref(null)
+const feeds = ref([])
 
 // 역순 데이터 계산
 const reversedFeeds = computed(() => [...feeds.value].reverse())
-
-const feeds = ref([
-  {
-    "user": 1,
-    "movie_id": 1129598,
-    "genre_ids": [28, 53, 27],
-    "watch_date": "2024-11-01",
-    "watch_time": "morning",
-    "watch_place": "movie_theater",
-    "watch_with_who": "alone",
-    "watch_reason": ["재미있을 것 같아서", "추천을 받아서"],
-    "rating": 1,
-    "comment": "굳",
-    "is_share_to_feed": true,
-    "poster_path": '/3flIDcZF3tnR7m5OU2h7lLPQwmr.jpg',
-  },
-  {
-    "user": 1,
-    "movie_id": 27205,
-    "genre_ids": [28, 878, 12],
-    "watch_date": "2024-11-01",
-    "watch_time": "morning",
-    "watch_place": "home",
-    "watch_with_who": "alone",
-    "watch_reason": ["추천을 받아서"],
-    "rating": 4,
-    "comment": "꿀잼",
-    "is_share_to_feed": true,
-    "poster_path": '/wIrhEUBWjRmZuL1Ix41cF2LhJrW.jpg',
-  },
-  {
-    "user": 1,
-    "movie_id": 157336,
-    "genre_ids": [12, 18, 878],
-    "watch_date": "2024-11-13",
-    "watch_time": "evening",
-    "watch_place": "friend_home",
-    "watch_with_who": "alone",
-    "watch_reason": ["추천을 받아서"],
-    "rating": 4,
-    "comment": "다시보고싶다.",
-    "is_share_to_feed": true,
-    "poster_path": '/dcUmzoiHChYmtef2yEe06QcML5o.jpg',
-  },
-  {
-    "user": 1,
-    "movie_id": 157336,
-    "genre_ids": [12, 18, 878],
-    "watch_date": "2024-11-13",
-    "watch_time": "evening",
-    "watch_place": "friend_home",
-    "watch_with_who": "alone",
-    "watch_reason": ["추천을 받아서"],
-    "rating": 4,
-    "comment": "다시보고싶다.",
-    "is_share_to_feed": true,
-    "poster_path": '/wXNihLltMCGR7XepN39syIlCt5X.jpg',
-  },
-  {
-    "user": 1,
-    "movie_id": 157336,
-    "genre_ids": [12, 18, 878],
-    "watch_date": "2024-11-13",
-    "watch_time": "evening",
-    "watch_place": "friend_home",
-    "watch_with_who": "alone",
-    "watch_reason": ["추천을 받아서"],
-    "rating": 4,
-    "comment": "다시보고싶다.",
-    "is_share_to_feed": true,
-    "poster_path": '/oDVjlCTSyF6Fh8Fpm683MyGGnSG.jpg',
-  },
-  {
-    "user": 1,
-    "movie_id": 157336,
-    "genre_ids": [12, 18, 878],
-    "watch_date": "2024-11-13",
-    "watch_time": "evening",
-    "watch_place": "friend_home",
-    "watch_with_who": "alone",
-    "watch_reason": ["추천을 받아서"],
-    "rating": 4,
-    "comment": "다시보고싶다.",
-    "is_share_to_feed": true,
-    "poster_path": '/1VUExee8iFohFTwYVi4IOArYyaM.jpg',
-  },
-])
 
 // 이미지 가져오기(완료)
 const getImageUrl = (path) => {
@@ -167,14 +82,48 @@ const goLogOut = function () {
   store.logOut()
 }
 
+// 사용자 ID 가져오기(완료)
+const getUserId = async function () {
+  try {
+    const res = await axios({
+      method: 'get',
+      url: `${SERVER_API_URL}/accounts/userinfo/${store.userName}/`,
+      headers: {
+        Authorization: `Token ${store.serverToken}`,
+      },
+    });
+    userId.value = res.data.id;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+// 팔로우/팔로잉 정보 가져오기
+const fetchFollowData = async () => {
+  try {
+    const response = await axios.get(`${SERVER_API_URL}/accounts/follow/list/${userName}/`, {
+      headers: {
+        Authorization: `Token ${store.serverToken}`,
+      },
+    });
+    // API 응답 데이터에서 팔로워 및 팔로잉 수를 추출
+    followerCount.value = response.data.follower_count;
+    followingCount.value = response.data.following_count;
+  } catch (err) {
+    console.error('팔로우/팔로잉 데이터를 가져오는 중 오류 발생:', err);
+    error.value = '팔로우/팔로잉 데이터를 가져오는 중 오류가 발생했습니다.';
+  }
+};
+
+// 해당 사용자의 피드 가져오기(완료)
 const fetchFeeds = async () => {
   isLoading.value = true
   error.value = null
 
   try {
-    const response = await axios.get(`${store.SERVER_API_URL}/feeds/${store.userName}/`, {
+    const response = await axios.get(`${SERVER_API_URL}/movies/feeds/${store.userId}/`, {
       headers: {
-        Authorization: `Token ${store.serverToken}`, // 필요한 경우 인증 토큰 추가
+        Authorization: `Token ${store.serverToken}`,
       },
     })
     feeds.value = response.data // API 응답 데이터를 feeds에 저장
@@ -187,10 +136,13 @@ const fetchFeeds = async () => {
 }
 
 // 컴포넌트 마운트 시 API 호출
-onMounted(() => {
-  fetchFeeds()
-})
+onMounted(async () => {
+  await getUserId(); // 사용자 ID 가져오기
+  await fetchFeeds(); // 피드 가져오기
+  await fetchFollowData(); // 팔로워/팔로잉 정보 가져오기
+});
 </script>
+
 
 <style scoped>
 .feed-grid {
