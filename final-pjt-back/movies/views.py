@@ -5,7 +5,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Feed, Movie
 from .serializers import FeedSerializer, MovieSerializer
-    
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
 from django.http import JsonResponse
 from django.db.models import Count
 
@@ -31,7 +33,34 @@ class MovieCreateView(APIView):
 
 ##################################################################################
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 
+def followed_users_feed_list(request):
+    user = request.user
+    followed_users = user.followings.all()
+
+    feeds = Feed.objects.filter(user__in=followed_users, is_share_to_feed=True).order_by('-created_at')[:50]
+    feed_data = []
+    for feed in feeds:
+        try:
+            movie = Movie.objects.get(id=feed.movie_id)
+            movie_data = {
+                'id': movie.id,
+                'original_title': movie.original_title,
+                'overview': movie.overview,
+                'poster_path': movie.poster_path,
+                'title': movie.title,
+                'vote_average': movie.vote_average,
+            }
+        except Movie.DoesNotExist:
+            movie_data = None  # 또는 기본값 설정
+
+        serialized_feed = FeedSerializer(feed).data
+        serialized_feed['movie'] = movie_data
+        feed_data.append(serialized_feed)
+
+    return JsonResponse(feed_data, safe=False)
 # 프로필 페이지 피드 출력용
 def user_feed_list(request, user_id):
     # 사용자 ID에 해당하는 Feed 데이터 가져오기

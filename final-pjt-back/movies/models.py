@@ -14,6 +14,7 @@ class Feed(models.Model):
     rating = models.IntegerField()
     comment = models.TextField()
     is_share_to_feed = models.BooleanField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
 class Movie(models.Model):
     id = models.IntegerField(primary_key=True)  # 영화 ID
