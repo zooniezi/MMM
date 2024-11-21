@@ -3,8 +3,8 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Feed, Movie, Comment
-from .serializers import FeedSerializer, MovieSerializer, CommentSerializer
+from .models import Feed, Movie, Comment, Emoji
+from .serializers import FeedSerializer, MovieSerializer, CommentSerializer, EmojiSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
@@ -36,7 +36,7 @@ class MovieCreateView(APIView):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-
+# 피드 페이지 피드 출력용 (팔로우한 사람들의 피드 최신순 출력)
 def followed_users_feed_list(request):
     user = request.user
     followed_users = user.followings.all()
@@ -62,7 +62,6 @@ def followed_users_feed_list(request):
         feed_data.append(serialized_feed)
 
     return JsonResponse(feed_data, safe=False)
-
 
 # 프로필 페이지 피드 출력용
 def user_feed_list(request, user_id):
@@ -96,7 +95,6 @@ def user_feed_list(request, user_id):
         })
 
     return JsonResponse(data, safe=False)
-
 
 ##################################################################################
 
@@ -205,7 +203,6 @@ def comment_list_create(request, feed_id):
             serializer.save(feed_id=feed_id, user=request.user)
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
-    
 
 # 댓글 삭제용
 @api_view(['DELETE'])
@@ -214,3 +211,46 @@ def comment_delete(request, feed_id, comment_id):
     comment = get_object_or_404(Comment, id=comment_id, feed_id=feed_id, user=request.user)
     comment.delete()
     return Response({"message": "Comment deleted successfully."}, status=HTTP_204_NO_CONTENT)
+
+# 감정 표현 추가/삭제용
+@api_view(['POST', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def toggle_emoji(request, feed_id):
+    user = request.user
+    emoji_value = request.data.get('emoji')  # 전달된 이모지 값
+
+    # Feed 객체 가져오기
+    feed = Feed.objects.filter(id=feed_id).first()
+    # 못찾아올때 에러메세지
+    if not feed:
+        return Response({'error': 'Feed not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    # 감정 표현 추가 시
+    if request.method == 'POST':
+        emoji, created = Emoji.objects.get_or_create(user=user, feed=feed, defaults={'emoji': emoji_value})
+        if not created:
+            return Response({'message': 'Emoji already exists for this feed.'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = EmojiSerializer(emoji)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    # 감정 표현 삭제 시
+    elif request.method == 'DELETE':
+        try:
+            emoji = Emoji.objects.get(user=user, feed=feed)
+            emoji.delete()
+            return Response({'message': 'Emoji removed successfully.'}, status=status.HTTP_204_NO_CONTENT)
+        except Emoji.DoesNotExist:
+            return Response({'error': 'Emoji not found for this user and feed.'}, status=status.HTTP_404_NOT_FOUND)
+        
+# 피드별 이모지 조회용
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_feed_emojis(request, feed_id):
+    feed = Feed.objects.filter(id=feed_id).first()
+    # 없으면 에러
+    if not feed:
+        return Response({'error': 'Feed not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    emojis = Emoji.objects.filter(feed=feed)
+    serializer = EmojiSerializer(emojis, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)

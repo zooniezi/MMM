@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Feed, Movie, Comment
+from .models import Feed, Movie, Comment, Emoji
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -9,9 +9,13 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ['id', 'user', 'emoji', 'content', 'created_at']
         read_only_fields = ['id', 'user', 'created_at']
-        extra_kwargs = {
-            'content': {'required': False, 'allow_null': True}  # content 필드 선택적 설정
-        }
+
+class EmojiSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)
+    class Meta:
+        model = Emoji
+        fields = ['id', 'user', 'feed', 'emoji']
+        read_only_fields = ['id', 'user']
 
 class FeedSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
