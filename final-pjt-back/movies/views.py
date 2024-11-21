@@ -107,6 +107,7 @@ def recommend_movies_with_rating(request):
     watch_with_who = request.GET.get('watch_with_who')  # 예: 'friends'
     genre_ids = request.GET.getlist('genre_id')  # 예: [28, 12]
 
+    data = []
     # Feed 데이터 가져오기-일단 전부 가져오기
     feeds = Feed.objects.all()
 
@@ -137,32 +138,27 @@ def recommend_movies_with_rating(request):
         score += feed.rating*2  
 
         # 일정수준 이상이면 추천 목록 후보에 추가
-        if score > 16:
+        if score > 10:
             recommendations.append((feed.movie_id, score))
 
     # 추천 목록 후보가 10개 이하인 경우 vote_average를 이용해 추천 목록 10개까지 채우기
-    if len(recommendations) < 10:
+    additional_movies = []
+    if len(recommendations) < 5:
         additional_movies = Movie.objects.exclude(
         id__in=[rec[0] for rec in recommendations]
     ).exclude(
         id__in=already_watched_movies
-    ).order_by('-vote_average')[:10 - len(recommendations)]
-    for movie in additional_movies:
-        data.append({
-            "id": movie.id,
-            "original_title": movie.original_title,
-            "overview": movie.overview,
-            "poster_path": movie.poster_path,
-            "title": movie.title,
-            "vote_average": movie.vote_average,
-        })
+    ).order_by('-vote_average')[:5 - len(recommendations)]
 
     # 점수 순으로 정렬하고 상위 10개 추출
-    recommendations = sorted(recommendations, key=lambda x: x[1], reverse=True)[:10]
+    recommendations = sorted(recommendations, key=lambda x: x[1], reverse=True)[:5]
 
     # 추천 목록에 해당하는 영화 데이터 가져오기
     movie_ids = [rec[0] for rec in recommendations]
-    movies = Movie.objects.filter(id=movie_ids)
+    if movie_ids:
+        movies = Movie.objects.filter(id__in=movie_ids)
+    else:
+        movies = [] 
 
     # 결과 반환
     data = [
@@ -176,6 +172,16 @@ def recommend_movies_with_rating(request):
         }
         for movie in movies
     ]
+    for movie in additional_movies:
+        data.append({
+            "id": movie.id,
+            "original_title": movie.original_title,
+            "overview": movie.overview,
+            "poster_path": movie.poster_path,
+            "title": movie.title,
+            "vote_average": movie.vote_average,
+        })
+
     return JsonResponse(data, safe=False)
 
 ################################################################
