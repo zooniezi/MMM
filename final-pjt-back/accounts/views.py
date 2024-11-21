@@ -73,7 +73,7 @@ def get_users_without_admin(request):
 @permission_classes([IsAuthenticated])
 def get_follows(request, username):
     user = get_object_or_404(User, username=username)
-    serializer = UserFollowSerializers(user, many=True)
+    serializer = UserFollowSerializers(user, many=False)
     return Response(serializer.data)
 
 
