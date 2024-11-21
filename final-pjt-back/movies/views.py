@@ -3,11 +3,12 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Feed, Movie
-from .serializers import FeedSerializer, MovieSerializer
+from .models import Feed, Movie, Comment
+from .serializers import FeedSerializer, MovieSerializer, CommentSerializer
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
+from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.db.models import Count
 
@@ -61,6 +62,8 @@ def followed_users_feed_list(request):
         feed_data.append(serialized_feed)
 
     return JsonResponse(feed_data, safe=False)
+
+
 # 프로필 페이지 피드 출력용
 def user_feed_list(request, user_id):
     # 사용자 ID에 해당하는 Feed 데이터 가져오기
@@ -176,3 +179,32 @@ def recommend_movies_with_rating(request):
     return JsonResponse(data, safe=False)
 
 ################################################################
+
+
+# 댓글 조회 및 생성
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticatedOrReadOnly])
+def comment_list_create(request, feed_id):
+
+    # 특정 Feed에 대한 댓글 조회
+    if request.method == 'GET':
+        comments = Comment.objects.filter(feed_id=feed_id).order_by('-created_at')
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+    # 댓글 생성
+    elif request.method == 'POST':
+        serializer = CommentSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save(feed_id=feed_id, user=request.user)
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+    
+
+# 댓글 삭제용
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def comment_delete(request, feed_id, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id, feed_id=feed_id, user=request.user)
+    comment.delete()
+    return Response({"message": "Comment deleted successfully."}, status=HTTP_204_NO_CONTENT)

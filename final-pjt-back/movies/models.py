@@ -26,5 +26,14 @@ class Movie(models.Model):
 
     def __str__(self):
         return self.title
+    
+class Comment(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='comments')
+    feed = models.ForeignKey('Feed', on_delete=models.CASCADE, related_name='comments')
+    # 댓글 감정표현
+    emoji = models.IntegerField()
+    # 쓸지는 모르나 일반적인 댓글처럼 텍스트 데이터도 받아올 수 있도록
+    content = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
