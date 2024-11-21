@@ -3,11 +3,12 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Feed, Movie
-from .serializers import FeedSerializer, MovieSerializer
+from .models import Feed, Movie, Comment
+from .serializers import FeedSerializer, MovieSerializer, CommentSerializer
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
+from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.db.models import Count
 
@@ -61,6 +62,8 @@ def followed_users_feed_list(request):
         feed_data.append(serialized_feed)
 
     return JsonResponse(feed_data, safe=False)
+
+
 # 프로필 페이지 피드 출력용
 def user_feed_list(request, user_id):
     # 사용자 ID에 해당하는 Feed 데이터 가져오기
@@ -104,6 +107,7 @@ def recommend_movies_with_rating(request):
     watch_with_who = request.GET.get('watch_with_who')  # 예: 'friends'
     genre_ids = request.GET.getlist('genre_id')  # 예: [28, 12]
 
+    data = []
     # Feed 데이터 가져오기-일단 전부 가져오기
     feeds = Feed.objects.all()
 
@@ -134,32 +138,27 @@ def recommend_movies_with_rating(request):
         score += feed.rating*2  
 
         # 일정수준 이상이면 추천 목록 후보에 추가
-        if score > 16:
+        if score > 10:
             recommendations.append((feed.movie_id, score))
 
     # 추천 목록 후보가 10개 이하인 경우 vote_average를 이용해 추천 목록 10개까지 채우기
-    if len(recommendations) < 10:
+    additional_movies = []
+    if len(recommendations) < 5:
         additional_movies = Movie.objects.exclude(
         id__in=[rec[0] for rec in recommendations]
     ).exclude(
         id__in=already_watched_movies
-    ).order_by('-vote_average')[:10 - len(recommendations)]
-    for movie in additional_movies:
-        data.append({
-            "id": movie.id,
-            "original_title": movie.original_title,
-            "overview": movie.overview,
-            "poster_path": movie.poster_path,
-            "title": movie.title,
-            "vote_average": movie.vote_average,
-        })
+    ).order_by('-vote_average')[:5 - len(recommendations)]
 
     # 점수 순으로 정렬하고 상위 10개 추출
-    recommendations = sorted(recommendations, key=lambda x: x[1], reverse=True)[:10]
+    recommendations = sorted(recommendations, key=lambda x: x[1], reverse=True)[:5]
 
     # 추천 목록에 해당하는 영화 데이터 가져오기
     movie_ids = [rec[0] for rec in recommendations]
-    movies = Movie.objects.filter(id=movie_ids)
+    if movie_ids:
+        movies = Movie.objects.filter(id__in=movie_ids)
+    else:
+        movies = [] 
 
     # 결과 반환
     data = [
@@ -173,6 +172,45 @@ def recommend_movies_with_rating(request):
         }
         for movie in movies
     ]
+    for movie in additional_movies:
+        data.append({
+            "id": movie.id,
+            "original_title": movie.original_title,
+            "overview": movie.overview,
+            "poster_path": movie.poster_path,
+            "title": movie.title,
+            "vote_average": movie.vote_average,
+        })
+
     return JsonResponse(data, safe=False)
 
 ################################################################
+
+
+# 댓글 조회 및 생성
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticatedOrReadOnly])
+def comment_list_create(request, feed_id):
+
+    # 특정 Feed에 대한 댓글 조회
+    if request.method == 'GET':
+        comments = Comment.objects.filter(feed_id=feed_id).order_by('-created_at')
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+    # 댓글 생성
+    elif request.method == 'POST':
+        serializer = CommentSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save(feed_id=feed_id, user=request.user)
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+    
+
+# 댓글 삭제용
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def comment_delete(request, feed_id, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id, feed_id=feed_id, user=request.user)
+    comment.delete()
+    return Response({"message": "Comment deleted successfully."}, status=HTTP_204_NO_CONTENT)
