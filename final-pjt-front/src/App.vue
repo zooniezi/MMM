@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="container">
     <!-- 네비게이션 바 -->
     <AppNavbar />
 
@@ -17,6 +17,7 @@
 
 <script setup>
 import AppNavbar from './components/AppNavbar.vue';
+
 </script>
 
 <style scoped>

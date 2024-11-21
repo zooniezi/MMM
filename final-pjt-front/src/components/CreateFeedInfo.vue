@@ -11,19 +11,19 @@
       <label>시청 시간:</label>
       <div>
         <label>
-          <input type="radio" value="morning" v-model="watchTime" />
+          <input type="radio" value="오전" v-model="watchTime" />
           오전
         </label>
         <label>
-          <input type="radio" value="afternoon" v-model="watchTime" />
+          <input type="radio" value="오후" v-model="watchTime" />
           오후
         </label>
         <label>
-          <input type="radio" value="evening" v-model="watchTime" />
+          <input type="radio" value="저녁" v-model="watchTime" />
           저녁
         </label>
         <label>
-          <input type="radio" value="night" v-model="watchTime" />
+          <input type="radio" value="밤" v-model="watchTime" />
           밤
         </label>
       </div>
@@ -36,19 +36,19 @@
       <label>시청 장소:</label>
       <div>
         <label>
-          <input type="radio" value="movie_theater" v-model="watchPlace" />
+          <input type="radio" value="영화관" v-model="watchPlace" />
           영화관
         </label>
         <label>
-          <input type="radio" value="home" v-model="watchPlace" />
+          <input type="radio" value="집" v-model="watchPlace" />
           집
         </label>
         <label>
-          <input type="radio" value="friend_home" v-model="watchPlace" />
-          친구 집
+          <input type="radio" value="야외" v-model="watchPlace" />
+          야외
         </label>
         <label>
-          <input type="radio" value="other" v-model="watchPlace" />
+          <input type="radio" value="기타" v-model="watchPlace" />
           기타
         </label>
       </div>
@@ -61,23 +61,23 @@
       <label>함께 본 사람:</label>
       <div>
         <label>
-          <input type="radio" value="alone" v-model="watchWithWho" />
+          <input type="radio" value="혼자" v-model="watchWithWho" />
           혼자
         </label>
         <label>
-          <input type="radio" value="family" v-model="watchWithWho" />
+          <input type="radio" value="가족" v-model="watchWithWho" />
           가족
         </label>
         <label>
-          <input type="radio" value="friend" v-model="watchWithWho" />
+          <input type="radio" value="친구" v-model="watchWithWho" />
           친구
         </label>
         <label>
-          <input type="radio" value="lover" v-model="watchWithWho" />
+          <input type="radio" value="연인" v-model="watchWithWho" />
           연인
         </label>
         <label>
-          <input type="radio" value="other" v-model="watchWithWho" />
+          <input type="radio" value="기타" v-model="watchWithWho" />
           기타
         </label>
       </div>

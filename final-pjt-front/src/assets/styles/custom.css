@@ -1,11 +1,19 @@
-/* 기본 배경 */
-body {
-  background-color: #FFFAE6;
-  color: #002379;
-  margin: 0;
-  padding: 0;
+@font-face {
+  font-family: 'DungGeunMo';
+  src: url('@/assets/fonts/DungGeunMo.eot'); /* IE8 이하 지원 */
+  src: url('@/assets/fonts/DungGeunMo.eot?#iefix') format('embedded-opentype'), /* IE9 이상 */
+       url('@/assets/fonts/DungGeunMo.woff2') format('woff2'), /* 최신 브라우저 */
+       url('@/assets/fonts/DungGeunMo.woff') format('woff'); /* 구형 브라우저 */
+  font-weight: normal;
+  font-style: normal;
 }
 
-h1, h2 {
+/* 기본 적용 */
+body {
+  font-family: 'DungGeunMo', sans-serif;
+}
+
+h1 {
+  font-family: 'DungGeunMo', sans-serif;
   color: #FF5F00;
 }
