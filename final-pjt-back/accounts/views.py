@@ -13,12 +13,24 @@ from .models import User
 
 #############구분선#####################
 # 회원탈퇴
+# transaction 설정을 해야하는가?????
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated]) # 인증된 사용자만 권한 허용
 def user_delete(request):
-    request.user.delete()
+    user = request.user
+
+    # 1. 팔로우/팔로워 삭제
+    user.followings.clear()  # 내가 팔로우한 사람과의 관계 제거
+    user.followers.clear()  # 나를 팔로우한 사람과의 관계 제거
+
+    # 2. 사용자가 작성한 Feed 비공개 처리
+    Feed.objects.filter(user=user).update(is_share_to_feed=False)
+
+    username = user.username
+    user.delete()
+
     data = {
-            'content': f'{request.user}님의 탈퇴처리가 완료되었습니다.',
+            'content': f'{username}님의 탈퇴처리가 완료되었습니다.',
         }
     return Response(data, status=status.HTTP_204_NO_CONTENT)
 
