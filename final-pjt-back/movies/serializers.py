@@ -38,6 +38,19 @@ class FeedSerializer(serializers.ModelSerializer):
             'comments',  # 댓글 목록 포함
         ]
 
+    def get_movie(self, obj):
+        try:
+            movie = Movie.objects.get(id=obj.movie_id)
+            return {
+                'id': movie.id,
+                'original_title': movie.original_title,
+                'overview': movie.overview,
+                'poster_path': movie.poster_path,
+                'title': movie.title,
+                'vote_average': movie.vote_average,
+            }
+        except Movie.DoesNotExist:
+            return None  # 영화 데이터가 없을 경우 None 반환
 
 class MovieSerializer(serializers.ModelSerializer):
     class Meta:
