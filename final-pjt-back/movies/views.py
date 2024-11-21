@@ -213,7 +213,7 @@ def comment_delete(request, feed_id, comment_id):
     return Response({"message": "Comment deleted successfully."}, status=HTTP_204_NO_CONTENT)
 
 # 감정 표현 추가/삭제용
-@api_view(['POST', 'DELETE'])
+@api_view(['GET', 'POST', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def toggle_emoji(request, feed_id):
     user = request.user
@@ -225,6 +225,14 @@ def toggle_emoji(request, feed_id):
     if not feed:
         return Response({'error': 'Feed not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+    # 감정 표현 조회 (GET)
+    if request.method == 'GET':
+        try:
+            emoji = Emoji.objects.get(user=user, feed=feed)
+            return Response({'emoji': emoji.emoji}, status=status.HTTP_200_OK)
+        except Emoji.DoesNotExist:
+            return Response({'emoji': None}, status=status.HTTP_200_OK)
+        
     # 감정 표현 추가 시
     if request.method == 'POST':
         emoji, created = Emoji.objects.get_or_create(user=user, feed=feed, defaults={'emoji': emoji_value})
