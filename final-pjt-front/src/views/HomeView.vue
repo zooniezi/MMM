@@ -24,7 +24,7 @@
     <div v-if="selectedFeed" class="modal">
       <div class="modal-content">
         <span class="close" @click="closeModal">&times;</span>
-        <h3>친구의 기록</h3>
+        <h3>{{ selectedFeed.user }} 님의 기록</h3>
         <p><strong>영화 제목:</strong> {{ selectedFeed.movie?.title }}</p>
         <p><strong>평점:</strong> {{ selectedFeed.rating }}</p>
         <p><strong>코멘트:</strong> {{ selectedFeed.comment }}</p>
@@ -60,7 +60,6 @@ const newComment = ref("");
 const isLoading = ref(false);
 const error = ref(null);
 const selectedFeed = ref(null);
-
 // 역순 데이터 계산
 const reversedFeeds = computed(() => [...feedData.value].reverse());
 
@@ -74,11 +73,9 @@ const getImageUrl = (path) => {
 // 모달 관리
 const openModal = async (feed) => {
   selectedFeed.value = feed;
-
   // 댓글 가져오기
   await fetchComments(feed.id);
 };
-
 const closeModal = () => {
   selectedFeed.value = null;
   comments.value = [];
