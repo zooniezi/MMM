@@ -4,11 +4,12 @@ from .models import Feed, Movie, Comment, Emoji
 
 class CommentSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)  # 댓글 작성자의 username 표시
-
+    feed = serializers.PrimaryKeyRelatedField(read_only=True)
+    content = serializers.CharField(required=True, allow_blank = False, allow_null = False, style = {'base_template': 'textarea.html'})
+    created_at = serializers.DateTimeField(read_only = True)
     class Meta:
         model = Comment
         fields = ['id', 'user', 'feed', 'content', 'created_at']
-        read_only_fields = ['id', 'user', 'created_at']
 
 class EmojiSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)

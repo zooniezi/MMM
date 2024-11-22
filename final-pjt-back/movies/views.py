@@ -189,7 +189,8 @@ def recommend_movies_with_rating(request):
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticatedOrReadOnly])
 def comment_list_create(request, feed_id):
-
+    feed = get_object_or_404(Feed, id=feed_id)
+    serializer = CommentSerializer(data=request.data, context={'feed': feed, 'request': request})
     # 특정 Feed에 대한 댓글 조회
     if request.method == 'GET':
         comments = Comment.objects.filter(feed_id=feed_id).order_by('-created_at')
@@ -199,6 +200,7 @@ def comment_list_create(request, feed_id):
     # 댓글 생성
     elif request.method == 'POST':
         serializer = CommentSerializer(data=request.data, context={'request': request})
+        print(serializer)
         if serializer.is_valid():
             serializer.save(feed_id=feed_id, user=request.user)
             return Response(serializer.data, status=HTTP_201_CREATED)
