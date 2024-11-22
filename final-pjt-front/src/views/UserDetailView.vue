@@ -42,6 +42,16 @@
         <p><strong>관람 이유:</strong> {{ selectedFeed.watch_reason.join(', ') }}</p>
         <p><strong>평점:</strong> {{ selectedFeed.rating }}</p>
         <p><strong>코멘트:</strong> {{ selectedFeed.comment }}</p>
+        <div class="comments-section">
+            <h4>댓글</h4>
+            <ul>
+              <li v-for="(comment, index) in comments" :key="index">
+                <strong>{{ comment.user }}</strong>: {{ comment.content }}
+              </li>
+            </ul>
+            <textarea v-model="newComment" placeholder="댓글을 입력하세요..."></textarea>
+            <button @click="postComment">댓글 등록</button>
+        </div>
       </div>
     </div>
   </div>
@@ -68,6 +78,10 @@ const selectedFeed = ref(null) // 모달에 표시할 피드
 const users = ref([]) // 전체 사용자 목록
 const loading = ref(false) // 로딩 상태
 const error = ref(null) // 에러 메시지
+
+
+
+
 
 // 현재 로그인한 사용자의 ID (스토어에서 가져오기)
 const currentUserId = store.userId // 스토어에 currentUserId가 있다고 가정
@@ -148,12 +162,68 @@ const fetchUserData = async () => {
 };
 
 // 모달 제어
-const openModal = (feed) => {
+const openModal = async(feed) => {
   selectedFeed.value = feed
+  // 댓글 가져오기
+  await fetchComments(feed.id);
 }
 const closeModal = () => {
   selectedFeed.value = null
 }
+
+// 241122 재준이 추가함
+
+const comments = ref([]);
+const newComment = ref("");
+// 댓글 가져오기
+const fetchComments = async (feedId) => {
+  try {
+    const response = await axios.get(
+      `${store.SERVER_API_URL}/movies/feeds/${feedId}/comments/`,
+      {
+        headers: {
+          Authorization: `Token ${store.serverToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    comments.value = response.data;
+  } catch (err) {
+    console.error("댓글 가져오기 실패:", err);
+    comments.value = [];
+  }
+  console.log(comments)
+};
+
+// 댓글 등록하기
+const postComment = async () => {
+  if (!newComment.value.trim()) return;
+
+  try {
+    const response = await axios.post(
+      `${store.SERVER_API_URL}/movies/feeds/${selectedFeed.value.id}/comments/`,
+      { content: newComment.value },
+      {
+        headers: {
+          Authorization: `Token ${store.serverToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    comments.value.unshift(response.data); // 새 댓글 추가
+    newComment.value = ""; // 입력 필드 초기화
+  } catch (err) {
+    console.error("댓글 등록 실패:", err);
+  }
+};
+// 여기까지 추가함
+
+
+
+
+
+
+
 
 // 팔로우 상태 확인
 const checkFollowStatus = async () => {
@@ -279,4 +349,21 @@ onMounted(async () => {
   cursor: pointer;
   font-size: 24px;
 }
+
+
+.comments-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.comments-section textarea {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+}
+
+.comments-section button {
+  margin-top: 10px;
+}
+
 </style>

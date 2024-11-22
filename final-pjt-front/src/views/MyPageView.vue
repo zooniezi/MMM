@@ -45,6 +45,16 @@
         <p><strong>관람 이유:</strong> {{ selectedFeed.watch_reason.join(', ') }}</p>
         <p><strong>평점:</strong> {{ selectedFeed.rating }}</p>
         <p><strong>코멘트:</strong> {{ selectedFeed.comment }}</p>
+        <div class="comments-section">
+            <h4>댓글</h4>
+            <ul>
+              <li v-for="(comment, index) in comments" :key="index">
+                <strong>{{ comment.user }}</strong>: {{ comment.content }}
+              </li>
+            </ul>
+            <textarea v-model="newComment" placeholder="댓글을 입력하세요..."></textarea>
+            <button @click="postComment">댓글 등록</button>
+        </div>
       </div>
     </div>
 
@@ -100,13 +110,62 @@ const getImageUrl = (path) => {
 
 const selectedFeed = ref(null)
 
-const openModal = (feed) => {
+const openModal = async(feed) => {
   selectedFeed.value = feed
+  // 댓글 가져오기
+  await fetchComments(feed.id);
 }
 
 const closeModal = () => {
   selectedFeed.value = null
 }
+
+// 241122 재준이 추가함
+
+const comments = ref([]);
+const newComment = ref("");
+// 댓글 가져오기
+const fetchComments = async (feedId) => {
+  try {
+    const response = await axios.get(
+      `${store.SERVER_API_URL}/movies/feeds/${feedId}/comments/`,
+      {
+        headers: {
+          Authorization: `Token ${store.serverToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    comments.value = response.data;
+  } catch (err) {
+    console.error("댓글 가져오기 실패:", err);
+    comments.value = [];
+  }
+};
+
+// 댓글 등록하기
+const postComment = async () => {
+  if (!newComment.value.trim()) return;
+
+  try {
+    const response = await axios.post(
+      `${store.SERVER_API_URL}/movies/feeds/${selectedFeed.value.id}/comments/`,
+      { content: newComment.value },
+      {
+        headers: {
+          Authorization: `Token ${store.serverToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    comments.value.unshift(response.data); // 새 댓글 추가
+    newComment.value = ""; // 입력 필드 초기화
+  } catch (err) {
+    console.error("댓글 등록 실패:", err);
+  }
+};
+// 여기까지 추가함
+
 
 const goLogOut = function () {
   store.logOut()
@@ -233,8 +292,6 @@ li.user-item:hover {
   text-decoration: underline;
 }
 
-
-
 .modal {
   position: fixed;
   top: 0;
@@ -268,5 +325,20 @@ li.user-item:hover {
   cursor: pointer;
   color: blue;
   text-decoration: underline;
+}
+
+.comments-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.comments-section textarea {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+}
+
+.comments-section button {
+  margin-top: 10px;
 }
 </style>
