@@ -54,7 +54,7 @@
         <span class="close" @click="closeFollowModal">&times;</span>
         <h3>{{ followModalType === 'followers' ? '팔로워 목록' : '팔로잉 목록' }}</h3>
         <ul>
-          <li v-for="user in followModalData" :key="user.id">
+          <li v-for="user in followModalData" :key="user.id" @click="goToUserDetail(user.username)" class="user-item">
             {{ user.username }}
           </li>
         </ul>
@@ -67,11 +67,12 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useMovieStore } from '@/stores/movie'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 
 const store = useMovieStore()
 const SERVER_API_URL = store.SERVER_API_URL
-
+const router = useRouter()
 // 상태 변수
 const totalFeeds = computed(() => feeds.value.length)
 const followerCount = ref(0)
@@ -142,6 +143,11 @@ const fetchFollowData = async () => {
     error.value = '팔로우/팔로잉 데이터를 가져오는 중 오류가 발생했습니다.';
   }
 };
+
+// 팔로우/팔로워 유저 상세 페이지로 이동
+const goToUserDetail = (username) => {
+  router.push({ name: 'userDetail', params: { username: username } })
+}
 
 // 특정 모달 데이터 가져오기
 const openFollowModal = async (type) => {
@@ -216,6 +222,18 @@ onMounted(async () => {
 .feed-item:hover {
   transform: scale(1.05);
 }
+
+li.user-item {
+  padding: 5px 0;
+  cursor: pointer;
+  color: #007BFF;
+}
+
+li.user-item:hover {
+  text-decoration: underline;
+}
+
+
 
 .modal {
   position: fixed;
