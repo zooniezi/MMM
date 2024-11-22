@@ -192,6 +192,7 @@ const fetchComments = async (feedId) => {
     console.error("댓글 가져오기 실패:", err);
     comments.value = [];
   }
+  console.log(comments)
 };
 
 // 댓글 등록하기
