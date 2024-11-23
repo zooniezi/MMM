@@ -27,21 +27,25 @@ const router = createRouter({
       path: '/home',
       name: 'home',
       component: HomeView,
+      meta: { hideNavbar: false },
     },
     {
       path: '/login',
       name: 'logIn',
       component: LoginView,
+      meta: { hideNavbar: true },
     },
     {
       path: '/signup',
       name: 'signUp',
       component: SignUpView,
+      meta: { hideNavbar: true },
     },
     {
       path: '/create-feed',
       // name: 'createFeed',
       component: CreateFeedView,
+      meta: { hideNavbar: false },
       children: [
         {
           path: '',
@@ -59,26 +63,31 @@ const router = createRouter({
       path: '/edit-user',
       name: 'editUser',
       component: EditUserView,
+      meta: { hideNavbar: false },
     },
     {
       path: '/recommend',
       name: 'recommend',
       component: RecommendView,
+      meta: { hideNavbar: false },
     },
     {
       path: '/search-user',
       name: 'searchUser',
       component: SearchUserView,
+      meta: { hideNavbar: false },
     },
     {
       path: '/my-page',
       name: 'myPage',
       component: MyPageView,
+      meta: { hideNavbar: false },
     },
     {
       path: '/user/:username',
       name: 'userDetail',
       component: UserDetailView,
+      meta: { hideNavbar: false },
     },
   ]
 })
