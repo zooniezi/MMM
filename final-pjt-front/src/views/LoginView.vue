@@ -1,4 +1,7 @@
 <template>
+  <div class="logo-container">
+    <img :src="logo" alt="Logo" width="150" />
+  </div>
   <div class="login-container">
     <h1 class="login-title">로그인</h1>
     <form @submit.prevent="logIn" class="login-form">
@@ -20,6 +23,7 @@
 import { ref } from 'vue'
 import { useMovieStore } from '@/stores/movie'
 import { useRouter } from 'vue-router'
+import logo from '@/assets/logo2.png'
 
 // Router 및 상태 관리 초기화
 const router = useRouter()
@@ -45,9 +49,18 @@ const goToSignUp = function() {
 </script>
 
 <style scoped>
+/* 로고를 중앙에 배치 */
+.logo-container {
+  display: flex;
+  justify-content: center; /* 수평 중앙 */
+  align-items: center; /* 수직 중앙 */
+  height: 150px; /* 로고 컨테이너 높이 (적절히 조절 가능) */
+  margin-bottom: 20px;
+}
+
 .login-container {
   max-width: 400px;
-  margin: 100px auto;
+  margin: 0 auto; /* 수평 중앙 */
   padding: 20px;
   background-color: #f9f9f9;
   border-radius: 8px;
@@ -57,7 +70,7 @@ const goToSignUp = function() {
 .login-title {
   text-align: center;
   font-size: 24px;
-  color: #FF9F66;
+  color: #FF5F00;
   margin-bottom: 20px;
 }
 

@@ -1,4 +1,7 @@
 <template>
+  <div class="logo-container">
+    <img :src="logo" alt="Logo" width="150" />
+  </div>
   <div class="signup-container">
     <p class="login-link">
       이미 계정이 있으신가요? <span @click="goToLogIn" class="link">로그인</span>
@@ -23,6 +26,7 @@
 import { ref } from 'vue'
 import { useMovieStore } from '@/stores/movie'
 import { useRouter } from 'vue-router'
+import logo from '@/assets/logo2.png'
 
 // Router 및 상태 관리 초기화
 const router = useRouter()
@@ -50,9 +54,18 @@ const goToLogIn = function () {
 </script>
 
 <style scoped>
+/* 로고를 중앙에 배치 */
+.logo-container {
+  display: flex;
+  justify-content: center; /* 수평 중앙 */
+  align-items: center; /* 수직 중앙 */
+  height: 150px; /* 로고 컨테이너 높이 */
+  margin-bottom: 20px;
+}
+
 .signup-container {
   max-width: 400px;
-  margin: 100px auto;
+  margin: 0 auto;
   padding: 20px;
   background-color: #f9f9f9;
   border-radius: 8px;
@@ -62,7 +75,7 @@ const goToLogIn = function () {
 .signup-title {
   text-align: center;
   font-size: 24px;
-  color: #FF9F66;
+  color: #FF5F00;
   margin-bottom: 20px;
 }
 
