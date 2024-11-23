@@ -1,45 +1,58 @@
 <template>
-  <div>
-    <h1>Home</h1>
-
-    <!-- 로딩 중 -->
-    <div v-if="isLoading">로딩 중...</div>
-
-    <!-- 에러 메시지 -->
-    <div v-else-if="error">{{ error }}</div>
-
-    <!-- 친구 피드 리스트 -->
-    <div v-else class="feed-grid">
-      <div
-        v-for="(feed, index) in reversedFeeds"
-        :key="index"
-        class="feed-item"
-        @click="openModal(feed)"
-        :style="{ backgroundImage: `url(${getImageUrl(feed.movie?.poster_path)})` }"
-      >
+  <div class="container mt-4">
+    <h1>홈</h1>
+    <div class="row row-cols-3 g-1">
+      <div v-for="(feed, index) in reversedFeeds" :key="index" class="col">
+        <div v-if="feed.is_share_to_feed">
+          <div class="card-container position-relative" @click="openModal(feed)">
+            <img
+              :src="getImageUrl(feed.movie?.poster_path)"
+              alt="포스터"
+              class="poster-image"
+            />
+            <div class="comment-count position-absolute">
+              <span v-if="feed.comments_count === null">Loading...</span>
+              <span v-else>{{ feed.comments_count }} Comments</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- 모달 -->
-    <div v-if="selectedFeed" class="modal">
-      <div class="modal-content">
-        <span class="close" @click="closeModal">&times;</span>
-        <h3>{{ selectedFeed.user }} 님의 기록</h3>
-        <p><strong>영화 제목:</strong> {{ selectedFeed.movie?.title }}</p>
-        <p><strong>평점:</strong> {{ selectedFeed.rating }}</p>
-        <p><strong>코멘트:</strong> {{ selectedFeed.comment }}</p>
-        <p><strong>관람 날짜:</strong> {{ selectedFeed.watch_date }}</p>
-
-        <!-- 댓글 섹션 -->
-        <div class="comments-section">
-          <h4>댓글</h4>
-          <ul>
-            <li v-for="(comment, index) in comments" :key="index">
-              <strong>{{ comment.user }}</strong>: {{ comment.content }}
-            </li>
-          </ul>
-          <textarea v-model="newComment" placeholder="댓글을 입력하세요..."></textarea>
-          <button @click="postComment">댓글 등록</button>
+    <div v-if="selectedFeed" class="modal show d-block" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ selectedFeed.user }} 님의 기록</h5>
+            <button type="button" class="btn-close" @click="closeModal"></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>영화 제목:</strong> {{ selectedFeed.movie?.title }}</p>
+            <p><strong>평점:</strong> {{ selectedFeed.rating }}</p>
+            <p><strong>코멘트:</strong> {{ selectedFeed.comment }}</p>
+            <p><strong>관람 날짜:</strong> {{ selectedFeed.watch_date }}</p>
+            <div class="comments-section">
+              <h4>댓글 ({{ commentCount }})</h4>
+              <ul class="list-group">
+                <li
+                  v-for="(comment, index) in comments"
+                  :key="index"
+                  class="list-group-item"
+                >
+                  <strong>{{ comment.user }}</strong>: {{ comment.content }}
+                </li>
+              </ul>
+              <textarea
+                v-model="newComment"
+                class="form-control my-3"
+                placeholder="댓글을 입력하세요..."
+              ></textarea>
+              <button @click="postComment" class="btn btn-primary w-100">
+                댓글 등록
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -58,8 +71,9 @@ const feedData = ref([]);
 const comments = ref([]);
 const newComment = ref("");
 const isLoading = ref(false);
-const error = ref(null);
 const selectedFeed = ref(null);
+const commentCount = ref(0); // 댓글 개수 상태 추가
+
 // 역순 데이터 계산
 const reversedFeeds = computed(() => [...feedData.value].reverse());
 
@@ -70,15 +84,45 @@ const getImageUrl = (path) => {
     : "https://via.placeholder.com/500x750?text=No+Image";
 };
 
+// 댓글 개수 업데이트
+const updateFeedCommentCount = (feedId, count) => {
+  const feed = feedData.value.find((f) => f.id === feedId);
+  if (feed) feed.comments_count = count;
+};
+
+// 댓글 동기화 함수
+const syncCommentsCount = async () => {
+  try {
+    const results = await Promise.all(
+      feedData.value.map((feed) =>
+        axios
+          .get(`${store.SERVER_API_URL}/movies/feeds/${feed.id}/comments/`, {
+            headers: { Authorization: `Token ${store.serverToken}` },
+          })
+          .then((response) => ({
+            feedId: feed.id,
+            commentsCount: response.data.length,
+          }))
+      )
+    );
+    results.forEach(({ feedId, commentsCount }) =>
+      updateFeedCommentCount(feedId, commentsCount)
+    );
+  } catch (err) {
+    console.error("댓글 동기화 실패:", err);
+  }
+};
+
 // 모달 관리
 const openModal = async (feed) => {
   selectedFeed.value = feed;
-  // 댓글 가져오기
   await fetchComments(feed.id);
 };
+
 const closeModal = () => {
   selectedFeed.value = null;
   comments.value = [];
+  commentCount.value = 0;
 };
 
 // 댓글 가져오기
@@ -86,17 +130,13 @@ const fetchComments = async (feedId) => {
   try {
     const response = await axios.get(
       `${store.SERVER_API_URL}/movies/feeds/${feedId}/comments/`,
-      {
-        headers: {
-          Authorization: `Token ${store.serverToken}`,
-          "Content-Type": "application/json",
-        },
-      }
+      { headers: { Authorization: `Token ${store.serverToken}` } }
     );
     comments.value = response.data;
+    commentCount.value = response.data.length;
+    updateFeedCommentCount(feedId, commentCount.value);
   } catch (err) {
     console.error("댓글 가져오기 실패:", err);
-    comments.value = [];
   }
 };
 
@@ -108,15 +148,12 @@ const postComment = async () => {
     const response = await axios.post(
       `${store.SERVER_API_URL}/movies/feeds/${selectedFeed.value.id}/comments/`,
       { content: newComment.value },
-      {
-        headers: {
-          Authorization: `Token ${store.serverToken}`,
-          "Content-Type": "application/json",
-        },
-      }
+      { headers: { Authorization: `Token ${store.serverToken}` } }
     );
-    comments.value.unshift(response.data); // 새 댓글 추가
-    newComment.value = ""; // 입력 필드 초기화
+    comments.value.unshift(response.data);
+    newComment.value = "";
+    commentCount.value++;
+    updateFeedCommentCount(selectedFeed.value.id, commentCount.value);
   } catch (err) {
     console.error("댓글 등록 실패:", err);
   }
@@ -125,18 +162,20 @@ const postComment = async () => {
 // 데이터 가져오기
 const fetchFollowedUsersFeed = async () => {
   isLoading.value = true;
-  error.value = null;
 
   try {
     const response = await axios.get(`${store.SERVER_API_URL}/movies/feeds/followed/`, {
-      headers: {
-        Authorization: `Token ${store.serverToken}`,
-      },
+      headers: { Authorization: `Token ${store.serverToken}` },
     });
-    feedData.value = response.data;
+    feedData.value = response.data.map((feed) => ({
+      ...feed,
+      comments_count: null, // 초기 상태
+    }));
+
+    // 댓글 개수 동기화
+    await syncCommentsCount();
   } catch (err) {
-    console.error("피드 데이터를 가져오는 중 오류 발생:", err);
-    error.value = "피드 데이터를 가져오는 데 실패했습니다.";
+    console.error("피드 데이터 가져오기 실패:", err);
   } finally {
     isLoading.value = false;
   }
@@ -150,71 +189,57 @@ onMounted(() => {
 
 
 <style scoped>
-.feed-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.feed-item {
+/* 카드 설정 */
+.card-container {
   width: 100%;
-  padding-top: 100%;
-  background-size: 110%;
-  background-position: center;
-  background-repeat: no-repeat;
-  border-radius: 10px;
+  aspect-ratio: 1 / 1;
+  background-color: black;
   overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.3s, background-size 0.3s;
-}
-
-.feed-item:hover {
-  transform: scale(1.05);
-}
-
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+  transition: opacity 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+/* 카드 Hover 효과 */
+.card-container:hover {
+  opacity: 0.8;
+}
+
+/* 포스터 이미지 */
+.poster-image {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+}
+
+/* 댓글 개수 표시 */
+.comment-count {
+  bottom: 10px;
+  left: 10px;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 5px 10px;
+  border-radius: 5px;
+  display: none; /* 기본적으로 숨김 */
+}
+
+/* Hover 시 댓글 개수 보이기 */
+.card-container:hover .comment-count {
+  display: block;
+}
+
+/* 모달 커스터마이징 */
+.modal {
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
-  background: white;
-  padding: 20px;
   border-radius: 10px;
-  max-width: 500px;
-  width: 100%;
-  position: relative;
-}
-
-.close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  cursor: pointer;
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.comments-section ul {
-  list-style: none;
-  padding: 0;
-}
-
-.comments-section textarea {
-  width: 100%;
-  margin-top: 10px;
-  padding: 10px;
-}
-
-.comments-section button {
-  margin-top: 10px;
+  overflow: hidden;
 }
 </style>
