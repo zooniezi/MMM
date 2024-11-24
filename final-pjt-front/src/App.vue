@@ -1,11 +1,11 @@
 <template>
-  <div class="container custom-container">
+  <div class="app-container">
     <!-- 네비게이션 바 -->
     <AppNavbar v-if="!$route.meta.hideNavbar" />
 
     <!-- 메인 콘텐츠 -->
-    <main class="content">
-      <RouterView />
+    <main class="container content">
+      <RouterView :key="$route.params.username" />
     </main>
 
     <!-- 푸터 -->
@@ -20,19 +20,16 @@ import AppNavbar from './components/AppNavbar.vue';
 </script>
 
 <style scoped>
-/* 화면 전체를 flexbox로 구성 */
-.custom-container {
+/* 앱의 전체 컨테이너 설정 */
+.app-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* 화면 전체 높이를 차지하도록 설정 */
-  margin: 0 auto;
-  max-width: 800px;
-  padding: 0 15px;
+  min-height: 100vh; /* 화면 전체 높이를 채우도록 설정 */
 }
 
-/* 메인 콘텐츠가 flex-grow로 푸터를 하단에 고정 */
-.content {
-  flex: 1;
+/* 메인 콘텐츠 */
+.container.content {
+  flex-grow: 1; /* 남은 공간을 차지하도록 설정 */
 }
 
 /* 푸터 스타일 */

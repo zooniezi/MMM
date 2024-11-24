@@ -1,6 +1,6 @@
 <template>
   <div class="px-0">
-    <h1>홈</h1>
+    <h1 class="page-title">홈</h1>
     <div class="row row-cols-3 g-1">
       <div v-for="(feed, index) in reversedFeeds" :key="index" class="col">
         <div v-if="feed.is_share_to_feed">
@@ -22,7 +22,7 @@
     <!-- 모달 -->
     <div v-if="selectedFeed" class="modal show d-block" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content bg-memo">
           <div class="modal-body d-flex">
             <!-- 왼쪽: 포스터 -->
             <div class="poster-section">
@@ -34,19 +34,21 @@
             </div>
             <!-- 오른쪽: 상세 정보 -->
             <div class="details-section">
-              <div class="modal-header px-0 py-1">
-                <h3 class="modal-title">{{ selectedFeed.user }} 님의 기록</h3>
+              <div class="modal-header p-0">
+                <h2 class="modal-title">{{ selectedFeed.user }}의 기록</h2>
                 <button type="button" class="btn-close" @click="closeModal"></button>
               </div>
               <div class="modal-body d-inline">
-                <p><strong>영화 제목:</strong> {{ selectedFeed.movie?.title }}</p>
-                <p><strong>관람 날짜:</strong> {{ selectedFeed.watch_date }}</p>
-                <p><strong>시간:</strong> {{ selectedFeed.watch_time }}</p>
-                <p><strong>장소:</strong> {{ selectedFeed.watch_place }}</p>
-                <p><strong>함께한 사람:</strong> {{ selectedFeed.watch_with_who }}</p>
-                <p><strong>관람 이유:</strong> {{ selectedFeed.watch_reason.join(', ') }}</p>
-                <p><strong>평점:</strong> {{ selectedFeed.rating }}</p>
-                <p><strong>코멘트:</strong> {{ selectedFeed.comment }}</p>
+                <div class="pt-2">
+                  <p><strong>영화 제목:</strong> {{ selectedFeed.movie?.title }}</p>
+                  <p><strong>관람 날짜:</strong> {{ selectedFeed.watch_date }}</p>
+                  <p><strong>시간:</strong> {{ selectedFeed.watch_time }}</p>
+                  <p><strong>장소:</strong> {{ selectedFeed.watch_place }}</p>
+                  <p><strong>함께한 사람:</strong> {{ selectedFeed.watch_with_who }}</p>
+                  <p><strong>관람 이유:</strong> {{ selectedFeed.watch_reason.join(', ') }}</p>
+                  <p><strong>평점:</strong> {{ selectedFeed.rating }}</p>
+                  <p><strong>코멘트:</strong> {{ selectedFeed.comment }}</p>
+                </div>
 
                 <!-- 감정 표현 기능 -->
                 <div class="emoji-section">
@@ -94,9 +96,9 @@
 
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import axios from "axios";
-import { useMovieStore } from "@/stores/movie";
+import { ref, computed, onMounted } from "vue"
+import { useMovieStore } from "@/stores/movie"
+import axios from "axios"
 
 // 상태 관리
 const store = useMovieStore();
@@ -160,6 +162,7 @@ const emojiOptions = [
 // 모달 관리
 const openModal = async (feed) => {
   selectedFeed.value = feed;
+  console.log(selectedFeed.value)
   await fetchComments(feed.id);
 
   // 서버에서 선택된 이모지 및 개수 가져오기
@@ -404,9 +407,9 @@ onMounted(() => {
 }
 
 .emoji-section button.active {
-  background-color: #007bff;
+  background-color: #ffa200;
   color: white;
-  border-color: #007bff;
+  border-color: #ffa200;
 }
 
 /* 댓글 섹션 */
