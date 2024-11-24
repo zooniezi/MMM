@@ -1,20 +1,38 @@
 <template>
   <div class="px-0">
     <h1 class="page-title">{{ userName }}의 마이페이지</h1>
-    <h2>프로필 부분</h2>
-    <p>총 피드수: {{ totalFeeds }}</p>
-    <p>
-      팔로워 수: 
-      <span class="link" @click="openFollowModal('followers')">
-        {{ followerCount }}
-      </span>
-    </p>
-    <p>
-      팔로잉 수: 
-      <span class="link" @click="openFollowModal('followings')">
-        {{ followingCount }}
-      </span>
-    </p>
+
+    <div class="d-flex justify-content-between align-items-center">
+      <!-- 왼쪽: 프로필 정보 -->
+      <div class="profile-section">
+        <p>총 피드: {{ totalFeeds }}</p>
+        <p>
+          팔로워:
+          <span class="link" @click="openFollowModal('followers')">
+            {{ followerCount }}
+          </span>
+        </p>
+        <p class="m-0">
+          팔로잉:
+          <span class="link" @click="openFollowModal('followings')">
+            {{ followingCount }}
+          </span>
+        </p>
+      </div>
+
+      <!-- 오른쪽: 옵션 버튼 -->
+      <div class="profile-options mt-auto">
+        <RouterLink
+          :to="{ name: 'editUser' }"
+          class="btn btn-outline-primary me-2"
+        >
+          회원정보 수정
+        </RouterLink>
+        <button @click="goLogOut" class="btn btn-outline-danger">
+          로그아웃
+        </button>
+      </div>
+    </div>
 
     <hr class="bg-dark" style="height: 2px;">
 
@@ -33,11 +51,6 @@
         </div>
       </div>
     </div>
-
-
-    <h2>옵션</h2>
-    <RouterLink :to="{ name: 'editUser' }">회원정보 수정</RouterLink><br>
-    <button @click="goLogOut">로그아웃</button>
 
     <!-- 피드 상세 모달 -->
     <div v-if="selectedFeed" class="modal show d-block" tabindex="-1">
@@ -119,15 +132,30 @@
     <!-- 팔로워/팔로잉 목록 모달 -->
     <div v-if="isFollowModalOpen" class="follow-modal">
       <div class="follow-modal-content">
-        <span class="close" @click="closeFollowModal">&times;</span>
-        <h3>{{ followModalType === 'followers' ? '팔로워 목록' : '팔로잉 목록' }}</h3>
-        <ul>
-          <li v-for="user in followModalData" :key="user.id" @click="goToUserDetail(user.username)" class="user-item">
-            {{ user.username }}
-          </li>
-        </ul>
+        <div class="modal-header d-flex justify-content-between align-items-center">
+          <h5 class="modal-title">{{ followModalType === 'followers' ? '팔로워' : '팔로잉' }}</h5>
+          <button type="button" class="btn-close" @click="closeFollowModal"></button>
+        </div>
+        <hr>
+        <div class="modal-body">
+          <ul class="list-group">
+            <li
+              v-for="user in followModalData"
+              :key="user.id"
+              class="list-group-item d-flex justify-content-between align-items-center"
+              @click="goToUserDetail(user.username)"
+            >
+              <div class="me-2">
+                <span>{{ user.username }}</span>
+              </div>
+              <button class="btn btn-outline-primary btn-sm">프로필 보기</button>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
+
+
   </div>
 </template>
 
@@ -578,6 +606,7 @@ onMounted(async () => {
   text-decoration: underline;
 }
 
+/* 모달 배경 */
 .follow-modal {
   display: flex;
   justify-content: center;
@@ -588,16 +617,24 @@ onMounted(async () => {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 1050; /* 충분히 높은 값으로 설정 */
+  z-index: 1050;
+  padding: 20px;
+  overflow-y: auto;
 }
 
+/* 모달 컨텐츠 */
 .follow-modal-content {
   background: white;
-  padding: 20px;
+  padding: 15px;
   border-radius: 10px;
-  max-width: 500px;
-  width: 90%;
-  position: relative;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 옵션 버튼 */
+.profile-options .btn {
+  width: auto;
 }
 
 </style>
