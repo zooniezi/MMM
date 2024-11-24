@@ -84,11 +84,28 @@
                 </div>
                 <div class="comments-section">
                     <h4>댓글 ({{ commentCount }})</h4>
+
                     <ul class="list-group">
-                      <li v-for="(comment, index) in comments" :key="index" class="list-group-item">
-                        <strong>{{ comment.user }}</strong>: {{ comment.content }}
+                      <li
+                        v-for="(comment, index) in comments"
+                        :key="comment.id"
+                        class="list-group-item"
+                      >
+                        <div>
+                          <strong>{{ comment.user }}</strong>: {{ comment.content }}
+                        </div>
+                        <div class="comment-meta d-flex justify-content-between mt-1">
+                          <span class="text-muted small">{{ formatTime(comment.created_at) }}</span>
+                          <button
+                            class="btn btn-danger btn-sm"
+                            @click="deleteComment(comment.id)"
+                          >
+                            삭제
+                          </button>
+                        </div>
                       </li>
                     </ul>
+
                     <textarea v-model="newComment" class="form-control my-3" placeholder="댓글을 입력하세요..."></textarea>
                     <button @click="postComment" class="btn btn-primary w-100">댓글 등록</button>
                 </div>
@@ -407,6 +424,26 @@ const fetchFeeds = async () => {
 const goLogOut = function () {
   store.logOut()
 }
+
+const formatTime = (timestamp) => {
+  const date = new Date(timestamp);
+  return date.toLocaleString(); // 원하는 포맷으로 변경 가능
+};
+
+const deleteComment = async (commentId) => {
+  try {
+    await axios.delete(
+      `${store.SERVER_API_URL}/movies/feeds/${selectedFeed.value.id}/comments/${commentId}/`,
+      { headers: { Authorization: `Token ${store.serverToken}` } }
+    );
+    // 로컬 상태에서 댓글 제거
+    comments.value = comments.value.filter((comment) => comment.id !== commentId);
+    commentCount.value--;
+    updateFeedCommentCount(selectedFeed.value.id, commentCount.value);
+  } catch (err) {
+    console.error("댓글 삭제 실패:", err);
+  }
+};
 
 // 컴포넌트 마운트 시 API 호출
 onMounted(async () => {
