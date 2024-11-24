@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>피드 생성</h1>
+    <h1 class="page-title">영화 기록</h1>
     <RouterView />
   </div>
 </template>

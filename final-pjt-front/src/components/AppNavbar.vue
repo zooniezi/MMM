@@ -31,10 +31,7 @@ import logo from '@/assets/logo2.png'
             <RouterLink :to="{ name: 'home' }" class="nav-link">홈</RouterLink>
           </li>
           <li class="nav-item">
-            <RouterLink :to="{ name: 'createFeed' }" class="nav-link">피드 생성</RouterLink>
-          </li>
-          <li class="nav-item">
-            <RouterLink :to="{ name: 'editUser' }" class="nav-link">회원정보 수정</RouterLink>
+            <RouterLink :to="{ name: 'createFeed' }" class="nav-link">영화 기록</RouterLink>
           </li>
           <li class="nav-item">
             <RouterLink :to="{ name: 'recommend' }" class="nav-link">영화 추천</RouterLink>

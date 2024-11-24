@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Edit</h1>
+    <h1 class="page-title">회원정보 수정</h1>
     <button @click="deleteUser">회원 탈퇴</button>
   </div>
 </template>
