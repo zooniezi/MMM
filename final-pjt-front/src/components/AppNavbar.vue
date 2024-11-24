@@ -4,11 +4,11 @@ import logo from '@/assets/logo2.png'
 </script>
 
 <template>
-  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+  <nav class="navbar navbar-expand-lg navbar-light bg-color shadow-sm">
     <div class="container">
       <!-- 로고 -->
       <RouterLink :to="{ name: 'home' }" class="navbar-brand">
-        <img :src="logo" alt="Logo" width="100" />
+        <img :src="logo" alt="Logo" width="120" height="auto" />
       </RouterLink>
 
       <!-- 토글 버튼 (모바일) -->
@@ -52,17 +52,23 @@ import logo from '@/assets/logo2.png'
 </template>
 
 <style scoped>
-/* 부트스트랩의 내장 스타일로 충분히 꾸며지지만 추가 커스터마이징 가능 */
+.bg-color {
+  background-color: #F9F9F9;
+}
+/* 로고 크기 조정 */
 .navbar-brand img {
-  max-width: 100px;
+  max-width: 120px; /* 로고 너비 키우기 */
+  height: auto; /* 자동 높이 비율 */
 }
 
+/* 메뉴 글씨 크기 조정 */
 .nav-link {
   color: #555 !important; /* 링크 기본 색상 */
   font-weight: 500; /* 약간 굵게 */
+  font-size: 1.1rem; /* 글씨 크기 키우기 */
 }
 
 .nav-link:hover {
-  color: #ff5f00 !important; /* 링크 hover 시 오렌지 색상 */
+  color: #ffa200 !important; /* 링크 hover 시 오렌지 색상 */
 }
 </style>

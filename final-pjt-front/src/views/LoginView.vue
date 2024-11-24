@@ -1,6 +1,6 @@
 <template>
   <div class="logo-container">
-    <img :src="logo" alt="Logo" width="150" />
+    <img :src="logo" alt="Logo" width="120" />
   </div>
   <div class="login-container">
     <h1 class="login-title">로그인</h1>
@@ -70,7 +70,7 @@ const goToSignUp = function() {
 .login-title {
   text-align: center;
   font-size: 24px;
-  color: #FF5F00;
+  color: #ffa200;
   margin-bottom: 20px;
 }
 
@@ -96,14 +96,14 @@ const goToSignUp = function() {
 }
 
 .form-input:focus {
-  border-color: #FF9F66;
+  border-color: #ffa200;
   outline: none;
   box-shadow: 0 0 5px rgba(255, 162, 40, 0.5);
 }
 
 .form-button {
   padding: 10px;
-  background-color: #FF9F66;
+  background-color: #ffa200;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -112,7 +112,7 @@ const goToSignUp = function() {
 }
 
 .form-button:hover {
-  background-color: #FF5F00;
+  background-color: #eb9501;
 }
 
 .sign-up-link {
@@ -123,12 +123,12 @@ const goToSignUp = function() {
 }
 
 .link {
-  color: #FF9F66;
+  color: #ffa200;
   cursor: pointer;
   text-decoration: underline;
 }
 
 .link:hover {
-  color: #FF5F00;
+  color: #eb9501;
 }
 </style>

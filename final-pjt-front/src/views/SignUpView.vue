@@ -1,6 +1,6 @@
 <template>
   <div class="logo-container">
-    <img :src="logo" alt="Logo" width="150" />
+    <img :src="logo" alt="Logo" width="120" />
   </div>
   <div class="signup-container">
     <p class="login-link">
@@ -75,7 +75,7 @@ const goToLogIn = function () {
 .signup-title {
   text-align: center;
   font-size: 24px;
-  color: #FF5F00;
+  color: #ffa200;
   margin-bottom: 20px;
 }
 
@@ -87,13 +87,13 @@ const goToLogIn = function () {
 }
 
 .link {
-  color: #FF9F66;
+  color: #ffa200;
   cursor: pointer;
   text-decoration: underline;
 }
 
 .link:hover {
-  color: #FF5F00;
+  color: #eb9501;
 }
 
 .signup-form {
@@ -118,14 +118,14 @@ const goToLogIn = function () {
 }
 
 .form-input:focus {
-  border-color: #FF9F66;
+  border-color: #ffa200;
   outline: none;
   box-shadow: 0 0 5px rgba(255, 162, 40, 0.5);
 }
 
 .form-button {
   padding: 10px;
-  background-color: #FF9F66;
+  background-color: #ffa200;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -134,6 +134,6 @@ const goToLogIn = function () {
 }
 
 .form-button:hover {
-  background-color: #FF5F00;
+  background-color: #eb9501;
 }
 </style>
