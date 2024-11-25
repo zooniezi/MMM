@@ -4,7 +4,7 @@
     
     <!-- 시간 선택 -->
     <div class="option-section">
-      <h2>⏰ 시간을 선택하세요</h2>
+      <h2>⏰ 시간을 선택하세요!</h2>
       <div class="option-buttons">
         <button 
           v-for="time in times" 
@@ -34,7 +34,7 @@
 
     <!-- 장르 선택 -->
     <div class="option-section">
-      <h2>🎭 장르를 선택하세요</h2>
+      <h2>🎭 장르를 선택하세요!</h2>
       <div class="option-buttons">
         <button 
           v-for="genre in genres" 
@@ -57,7 +57,6 @@
           max="5" 
           step="1" 
           v-model="selectedRating"
-          
         />
         <p v-if="selectedRating === '1'">사람들의 평가? 신경 쓰지 않고 가볍게 볼래요!</p>
         <p v-if="selectedRating === '2'">적당히 괜찮은 영화면 충분해요!</p>
@@ -82,6 +81,8 @@
         <div class="movie-info">
           <h3>{{ movie.title }}</h3>
           <p>평점: {{ movie.vote_average }}</p>
+          <p v-if="movie.overview !== 'nan'">개요: {{ movie.overview }}</p>
+          <p v-if="movie.overview === 'nan'">개요: 없음</p>
         </div>
       </div>
     </div>
@@ -212,7 +213,7 @@ button.selected {
 }
 
 .movie-card {
-  color: white;
+  color: black;
   display: flex;
   align-items: center;
   justify-content: start;
@@ -223,7 +224,7 @@ button.selected {
   max-width: 700px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  background: #ffba42;
+  background: #f0f0f0;
 }
 
 .movie-card:hover {
