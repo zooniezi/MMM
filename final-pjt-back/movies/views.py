@@ -76,12 +76,15 @@ def user_feed_list(request, user_id):
         try:
             movie = Movie.objects.get(id=feed.movie_id)
             poster_path = movie.poster_path  # Movie의 poster_path 가져오기
+            title = movie.title
+            original_title = movie.original_title
         except Movie.DoesNotExist:
             poster_path = None  # Movie 데이터가 없을 경우 None 처리
 
         # Feed 데이터에 poster_path 추가
         data.append({
             "id": feed.id,
+            "movie_title": title,
             "movie_id": feed.movie_id,
             "genre_ids": feed.genre_ids,
             "watch_date": feed.watch_date,
