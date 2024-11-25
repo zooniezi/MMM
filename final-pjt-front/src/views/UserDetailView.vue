@@ -1,26 +1,28 @@
 <template>
   <div class="px-0">
     <h1 class="page-title">{{ userName }}의 페이지</h1>
-    <p>총 피드: {{ userFeeds.length }}</p>
-    <div>
-      <p>
-        팔로워:
-        <span class="link" @click="openFollowModal('followers')">{{ followerCount }}</span>
-      </p>
-      <p>
-        팔로잉:
-        <span class="link" @click="openFollowModal('followings')">{{ followingCount }}</span>
-      </p>
+    <div class="profile-section">
+      <p>총 피드: {{ userFeeds.length }}</p>
+      <div>
+        <p>
+          팔로워:
+          <span class="link" @click="openFollowModal('followers')">{{ followerCount }}</span>
+        </p>
+        <p>
+          팔로잉:
+          <span class="link" @click="openFollowModal('followings')">{{ followingCount }}</span>
+        </p>
+      </div>
+  
+      <button 
+        @click="toggleFollow" 
+        :class="['btn', isFollowing ? 'btn-outline-danger' : 'btn-outline-primary']"
+      >
+        {{ isFollowing ? '언팔로우' : '팔로우' }}
+      </button>
     </div>
 
-    <button 
-      @click="toggleFollow" 
-      :class="['btn', isFollowing ? 'btn-outline-danger' : 'btn-outline-primary']"
-    >
-      {{ isFollowing ? '언팔로우' : '팔로우' }}
-    </button>
-
-    <hr class="bg-dark" style="height: 2px;">
+    <br>
 
     <div class="row row-cols-3 g-1">
       <div v-for="(feed, index) in reversedFeeds" :key="index" class="col">
@@ -537,6 +539,7 @@ onMounted(async () => {
 .card-container {
   width: 100%;
   aspect-ratio: 1 / 1;
+  border-radius: 10px;
   background-color: black;
   overflow: hidden;
   display: flex;
@@ -679,5 +682,12 @@ onMounted(async () => {
   max-width: 400px;
   width: 100%;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-section {
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 </style>

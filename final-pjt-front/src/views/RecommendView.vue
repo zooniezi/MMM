@@ -1,53 +1,70 @@
 <template>
-  <div>
-    <h1>영화 추천</h1>
+  <div class="game-style-container">
+    <h1 class="page-title">영화 추천</h1>
     
     <!-- 시간 선택 -->
-    <div>
-      <label for="time">시간: </label>
-      <select v-model="selectedTime" id="time">
-        <option value="" disabled>선택하세요</option>
-        <option v-for="time in times" :key="time" :value="time">
+    <div class="option-section">
+      <h2>⏰시간을 선택하세요</h2>
+      <div class="option-buttons">
+        <button 
+          v-for="time in times" 
+          :key="time" 
+          :class="{ selected: selectedTime === time }"
+          @click="selectedTime = time"
+        >
           {{ time }}
-        </option>
-      </select>
+        </button>
+      </div>
     </div>
 
     <!-- 누구와 함께 선택 -->
-    <div>
-      <label for="with">누구랑: </label>
-      <select v-model="selectedWith" id="with">
-        <option value="" disabled>선택하세요</option>
-        <option v-for="withOption in withOptions" :key="withOption" :value="withOption">
+    <div class="option-section">
+      <h2>👥누구랑 보시나요?</h2>
+      <div class="option-buttons">
+        <button 
+          v-for="withOption in withOptions" 
+          :key="withOption" 
+          :class="{ selected: selectedWith === withOption }"
+          @click="selectedWith = withOption"
+        >
           {{ withOption }}
-        </option>
-      </select>
+        </button>
+      </div>
     </div>
 
     <!-- 장르 선택 -->
-    <div>
-      <label for="genre">장르: </label>
-      <select v-model="selectedGenre" id="genre">
-        <option value="" disabled>선택하세요</option>
-        <option v-for="genre in genres" :key="genre.id" :value="genre.name">
+    <div class="option-section">
+      <h2>🎭장르를 선택하세요</h2>
+      <div class="option-buttons">
+        <button 
+          v-for="genre in genres" 
+          :key="genre.id" 
+          :class="{ selected: selectedGenre === genre.name }"
+          @click="selectedGenre = genre.name"
+        >
           {{ genre.name }}
-        </option>
-      </select>
+        </button>
+      </div>
     </div>
 
     <!-- 추천 버튼 -->
-    <button @click="getRecommendation">추천 받기</button>
+    <div class="action-section">
+      <button class="recommend-button" @click="getRecommendation">🎲추천 받기</button>
+    </div>
 
     <!-- 추천 결과 -->
-      <h2>추천 결과</h2>
-      <div v-for="movie in recommendation">
-        <p>추천 영화: {{ movie.title }}</p>
-        <p>개요: {{ movie.overview }}</p>
+    <div v-if="recommendation" class="result-section">
+      <h2>🎥 추천 결과</h2>
+      <div class="movie-card" v-for="movie in recommendation" :key="movie.id">
         <img :src="getImageUrl(movie.poster_path)" alt="영화 포스터" class="movie-poster" />
+        <div class="movie-info">
+          <h3>{{ movie.title }}</h3>
+          <p>{{ movie.overview }}</p>
+        </div>
       </div>
+    </div>
   </div>
 </template>
-
 
 <script setup>
 import { ref } from "vue"
@@ -97,7 +114,6 @@ const getImageUrl = (path) => {
 function getRecommendation() {
   const genreId = genres.find((genre) => genre.name === selectedGenre.value)?.id;
 
-  // API 요청
   axios({
     method: "get",
     url: `${store.SERVER_API_URL}/movies/recommend/`,
@@ -113,38 +129,97 @@ function getRecommendation() {
     },
   })
     .then((res) => {
-      // console.log("영화 추천 성공:", res.data);
       recommendation.value = res.data;
-      console.log(recommendation.value)
     })
     .catch((err) => {
       console.error("영화 추천 실패:", err);
-      recommendation.value = {
-        title: "추천 결과 없음",
-        description: "영화 추천 요청 중 오류가 발생했습니다.",
-        image: "https://via.placeholder.com/150?text=Error",
-      };
     });
 }
 </script>
 
 <style scoped>
-div {
-  margin: 10px;
+.game-style-container {
+  text-align: center;
+  color: #333;
 }
-label {
-  margin-right: 5px;
+
+.option-section {
+  margin: 20px 0;
 }
-select {
-  margin-right: 10px;
+
+.option-buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
+
 button {
-  margin-top: 10px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
+
+button:hover {
+  background-color: #fdb84f;
+  transform: scale(1.05);
+}
+
+button.selected {
+  background-color: #fdb84f;
+  font-weight: bold;
+}
+
+.recommend-button {
+  background-color: #ffa200;
+  color: white;
+  font-size: 1rem;
+  border: none;
+  border-radius: 10px;
+  padding: 15px 30px;
+}
+
+.result-section {
+  margin-top: 30px;
+}
+
+.movie-card {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: 20px;
+  margin: 20px auto;
+  padding: 15px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  max-width: 600px;
+}
+
 .movie-poster {
-  margin-top: 10px;
-  width: 150px;
+  width: 100px;
   height: 150px;
   object-fit: cover;
+  border-radius: 5px;
+}
+
+.movie-info {
+  text-align: left;
+}
+
+h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+p {
+  margin: 5px 0 0;
+}
+
+h2 {
+  font-size: 1.2rem;
 }
 </style>

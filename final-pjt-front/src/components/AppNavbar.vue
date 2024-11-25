@@ -62,7 +62,7 @@ import logo from '@/assets/logo2.png'
 .nav-link {
   color: #555 !important; /* 링크 기본 색상 */
   font-weight: 500; /* 약간 굵게 */
-  font-size: 1.1rem; /* 글씨 크기 키우기 */
+  font-size: 1rem; /* 글씨 크기 키우기 */
 }
 
 .nav-link:hover {

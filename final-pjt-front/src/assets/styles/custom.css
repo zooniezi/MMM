@@ -20,7 +20,7 @@ h1 {
 }
 
 .page-title {
-  font-size: 3rem; /* 글씨 크기 */
+  font-size: 2rem; /* 글씨 크기 */
   font-weight: 700; /* 두꺼운 글씨 */
   color: #ffa200; /* 오렌지색 */
   text-align: center; /* 가운데 정렬 */

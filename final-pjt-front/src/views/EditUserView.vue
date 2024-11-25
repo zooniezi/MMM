@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1 class="page-title">회원정보 수정</h1>
-    <button @click="deleteUser">회원 탈퇴</button>
+    <button class="delete-button" @click="deleteUser">회원 탈퇴</button>
   </div>
 </template>
 
@@ -36,9 +36,32 @@ const deleteUser = () => {
       })
   }
 }
-
 </script>
 
 <style scoped>
+.page-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
 
+.delete-button {
+  background-color: #ff4d4f; /* 경고를 주는 빨간색 */
+  color: #ffffff; /* 글씨를 흰색으로 */
+  border: none; /* 기본 테두리 제거 */
+  padding: 10px 20px; /* 여백 추가 */
+  font-size: 16px; /* 버튼 글씨 크기 */
+  font-weight: bold; /* 글씨 굵게 */
+  border-radius: 5px; /* 모서리를 둥글게 */
+  cursor: pointer; /* 클릭 가능하게 */
+  transition: background-color 0.3s ease; /* 색상 변화 애니메이션 */
+}
+
+.delete-button:hover {
+  background-color: #d9363e; /* 더 진한 빨간색으로 변경 */
+}
+
+.delete-button:active {
+  background-color: #b71c1c; /* 클릭 시 더 어두운 색 */
+}
 </style>
