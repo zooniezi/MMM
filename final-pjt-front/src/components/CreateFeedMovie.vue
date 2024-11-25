@@ -140,10 +140,12 @@ const goToMovieInfo = (movie) => {
 
 .movie-poster {
   height: 300px;
-  object-fit: cover;
+  object-fit: contain;
+  background-color: rgb(0, 0, 0);
 }
 
 .card {
+  background-color: #f9f9f9;
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }

@@ -100,6 +100,7 @@
                           <button
                             class="btn btn-danger btn-sm"
                             @click="deleteComment(comment.id)"
+                            v-if="comment.user === currentUser"
                           >
                             삭제
                           </button>
@@ -107,7 +108,7 @@
                       </li>
                     </ul>
 
-                    <textarea v-model="newComment" class="form-control my-3" placeholder="댓글을 입력하세요..."></textarea>
+                    <textarea v-model="newComment" class="form-control my-3" placeholder="댓글을 입력하세요..." @keyup.enter="postComment"></textarea>
                     <button @click="postComment" class="btn btn-primary w-100">댓글 등록</button>
                 </div>
               </div>
@@ -161,6 +162,7 @@ const router = useRouter()
 const user = ref(null) // 현재 유저 데이터
 const userId = ref(0)
 const userName = route.params.username
+const currentUser = store.userName
 const userFeeds = ref([]) // 현재 유저의 피드
 const isFollowing = ref(false) // 팔로우 상태
 const selectedFeed = ref(null) // 모달에 표시할 피드

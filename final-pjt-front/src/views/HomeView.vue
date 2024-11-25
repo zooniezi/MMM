@@ -9,7 +9,7 @@
     <br>
 
     <div class="row row-cols-3 g-1">
-      <div v-for="(feed, index) in reversedFeeds" :key="index" class="col">
+      <div v-for="(feed, index) in feedData" :key="index" class="col">
         <div v-if="feed.is_share_to_feed">
           <div class="card-container position-relative" @click="openModal(feed)">
             <img
@@ -88,6 +88,7 @@
                         <button
                           class="btn btn-danger btn-sm"
                           @click="deleteComment(comment.id)"
+                          v-if="comment.user === currentUser"
                         >
                           삭제
                         </button>
@@ -98,6 +99,7 @@
                     v-model="newComment"
                     class="form-control my-3"
                     placeholder="댓글을 입력하세요..."
+                    @keyup.enter="postComment"
                   ></textarea>
                   <button @click="postComment" class="btn btn-primary w-100">
                     댓글 등록
@@ -130,9 +132,7 @@ const selectedFeed = ref(null);
 const commentCount = ref(0); // 댓글 개수 상태 추가
 const selectedEmoji = ref(null);
 const emojiCounts = ref({});
-
-// 역순 데이터 계산
-const reversedFeeds = computed(() => [...feedData.value].reverse());
+const currentUser = store.userName
 
 // 이미지 URL 처리
 const getImageUrl = (path) => {
@@ -270,6 +270,7 @@ const fetchComments = async (feedId) => {
     );
     comments.value = response.data;
     commentCount.value = response.data.length;
+    console.log(comments.value)
     updateFeedCommentCount(feedId, commentCount.value);
   } catch (err) {
     console.error("댓글 가져오기 실패:", err);
