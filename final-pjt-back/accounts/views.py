@@ -75,7 +75,7 @@ def get_users_with_admin(request):
     return JsonResponse(data, safe=False)
 
 def get_users_without_admin(request):
-    users = User.objects.filter(is_superuser=False).values('id', 'username')
+    users = User.objects.filter(is_superuser=False).values('id', 'username', 'is_active')
     data = list(users)
     return JsonResponse(data, safe=False)
 
