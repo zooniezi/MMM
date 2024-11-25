@@ -9,16 +9,18 @@
       @input="filterUsers"
       class="mb-3"
     />
+    
     <ul v-if="filteredUsers.length > 0" class="m-0">
-      <span 
+      <li
         v-for="user in filteredUsers" 
         :key="user.id" 
         @click="goToUserDetail(user.username)"
-        class="user-item m-0"
+        class="user-item"
       >
-        {{ user.username }}
-      </span>
+      {{ user.username }}
+      </li>
     </ul>
+
     <p v-else class="empty-result">검색 결과가 없습니다.</p>
     <p v-if="loading" class="loading">로딩 중...</p>
     <p v-if="error" class="error">{{ error }}</p>
@@ -46,6 +48,7 @@ const fetchUsers = async () => {
   try {
     const response = await axios.get(`${store.SERVER_API_URL}/accounts/allusers/without_admin/`)
     users.value = response.data
+    // console.log(users.value)
     filterUsers() // 초기 필터링
   } catch (err) {
     error.value = '사용자 목록을 가져오는 데 실패했습니다.'
@@ -61,6 +64,7 @@ const filterUsers = () => {
     filteredUsers.value = [] // 검색어가 없을 때는 사용자 표시 안 함
   } else {
     filteredUsers.value = users.value.filter(user =>
+      user.is_active &&
       user.id !== store.userId &&
       user.username.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
@@ -107,19 +111,13 @@ ul {
   padding: 0;
 }
 
-span.user-item {
-  padding: 10px;
+li.user-item {
   cursor: pointer;
-  color: #ffffff;
-  background-color: #ffa200;
-  border-radius: 15px;
-  text-align: center;
-  margin-bottom: 5px;
-  transition: background-color 0.3s ease;
+  color: #ffa200;
 }
 
-span.user-item:hover {
-  background-color: #ffb73a;
+li.user-item:hover {
+  color: #ff7b00;
 }
 
 p.empty-result, p.loading, p.error {

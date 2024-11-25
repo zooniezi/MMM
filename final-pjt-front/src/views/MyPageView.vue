@@ -112,6 +112,7 @@
                           <button
                             class="btn btn-danger btn-sm"
                             @click="deleteComment(comment.id)"
+                            v-if="comment.user === userName"
                           >
                             삭제
                           </button>
@@ -119,7 +120,7 @@
                       </li>
                     </ul>
 
-                    <textarea v-model="newComment" class="form-control my-3" placeholder="댓글을 입력하세요..."></textarea>
+                    <textarea v-model="newComment" class="form-control my-3" placeholder="댓글을 입력하세요..." @keyup.enter="postComment"></textarea>
                     <button @click="postComment" class="btn btn-primary w-100">댓글 등록</button>
                 </div>
               </div>

@@ -363,9 +363,9 @@ const addMovie = function () {
     title: rawMovie.title,
     vote_average: rawMovie.vote_average,
     poster_path: rawMovie.poster_path,
+    runtime: rawMovie.runtime,
   }
-
-  console.log('전송 페이로드:', payload) // 페이로드 확인
+  // console.log(payload)
 
   axios({
     method: 'post',

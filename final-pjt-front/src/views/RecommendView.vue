@@ -4,7 +4,7 @@
     
     <!-- 시간 선택 -->
     <div class="option-section">
-      <h2>⏰시간을 선택하세요</h2>
+      <h2>⏰ 시간을 선택하세요</h2>
       <div class="option-buttons">
         <button 
           v-for="time in times" 
@@ -19,7 +19,7 @@
 
     <!-- 누구와 함께 선택 -->
     <div class="option-section">
-      <h2>👥누구랑 보시나요?</h2>
+      <h2>👥 누구랑 보시나요?</h2>
       <div class="option-buttons">
         <button 
           v-for="withOption in withOptions" 
@@ -34,7 +34,7 @@
 
     <!-- 장르 선택 -->
     <div class="option-section">
-      <h2>🎭장르를 선택하세요</h2>
+      <h2>🎭 장르를 선택하세요</h2>
       <div class="option-buttons">
         <button 
           v-for="genre in genres" 
@@ -47,6 +47,26 @@
       </div>
     </div>
 
+    <!-- 최소 평점 선택 -->
+    <div class="option-section">
+      <h2>⭐ 어떤 영화를 원하시나요?</h2>
+      <div class="rating-slider">
+        <input 
+          type="range" 
+          min="1" 
+          max="5" 
+          step="1" 
+          v-model="selectedRating"
+          
+        />
+        <p v-if="selectedRating === '1'">사람들의 평가? 신경 쓰지 않고 가볍게 볼래요!</p>
+        <p v-if="selectedRating === '2'">적당히 괜찮은 영화면 충분해요!</p>
+        <p v-if="selectedRating === '3'">사람들이 재미있다고 추천한 영화를 보고 싶어요!</p>
+        <p v-if="selectedRating === '4'">평점이 높은, 믿고 볼 수 있는 영화를 원해요!</p>
+        <p v-if="selectedRating === '5'">최고의 평가를 받은 명작만 보고 싶어요!</p>
+      </div>
+    </div>
+
     <!-- 추천 버튼 -->
     <div class="action-section">
       <button class="recommend-button" @click="getRecommendation">🎲추천 받기</button>
@@ -56,10 +76,12 @@
     <div v-if="recommendation" class="result-section">
       <h2>🎥 추천 결과</h2>
       <div class="movie-card" v-for="movie in recommendation" :key="movie.id">
-        <img :src="getImageUrl(movie.poster_path)" alt="영화 포스터" class="movie-poster" />
+        <div class="movie-foster">
+          <img :src="getImageUrl(movie.poster_path)" alt="영화 포스터" class="movie-poster" />
+        </div>
         <div class="movie-info">
           <h3>{{ movie.title }}</h3>
-          <p>{{ movie.overview }}</p>
+          <p>평점: {{ movie.vote_average }}</p>
         </div>
       </div>
     </div>
@@ -101,6 +123,7 @@ const genres = [
 const selectedTime = ref("");
 const selectedWith = ref("");
 const selectedGenre = ref("");
+const selectedRating = ref(0);
 const recommendation = ref(null);
 
 // 이미지 경로
@@ -126,6 +149,7 @@ function getRecommendation() {
       watch_time: selectedTime.value,
       watch_with_who: selectedWith.value,
       genre_id: genreId,
+      selected_rating: selectedRating.value,
     },
   })
     .then((res) => {
@@ -188,22 +212,36 @@ button.selected {
 }
 
 .movie-card {
+  color: white;
   display: flex;
   align-items: center;
   justify-content: start;
   gap: 20px;
   margin: 20px auto;
-  padding: 15px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  max-width: 600px;
+  padding: 20px;
+  border-radius: 15px;
+  max-width: 700px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: #ffba42;
+}
+
+.movie-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
 }
 
 .movie-poster {
-  width: 100px;
-  height: 150px;
+  width: 120px;
+  height: 180px;
   object-fit: cover;
-  border-radius: 5px;
+  border-radius: 10px;
+  background-color: #000;
+  transition: transform 0.3s ease;
+}
+
+.movie-poster:hover {
+  transform: scale(1.1);
 }
 
 .movie-info {
@@ -221,5 +259,23 @@ p {
 
 h2 {
   font-size: 1.2rem;
+}
+
+/* 스타일 추가 */
+.rating-slider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.rating-slider input[type="range"] {
+  width: 60%;
+  margin: 10px 0;
+}
+
+.rating-slider p {
+  margin: 0;
+  font-size: 1rem;
 }
 </style>
