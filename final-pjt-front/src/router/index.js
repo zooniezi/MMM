@@ -10,9 +10,11 @@ import RecommendView from '@/views/RecommendView.vue'
 import SearchUserView from '@/views/SearchUserView.vue'
 import MyPageView from '@/views/MyPageView.vue'
 import UserDetailView from '@/views/UserDetailView.vue'
+import AchievementsView from '@/views/AchievementsView.vue'
 
 import CreateFeedMovie from '@/components/CreateFeedMovie.vue'
 import CreateFeedInfo from '@/components/CreateFeedInfo.vue'
+
 
 
 const router = createRouter({
@@ -87,6 +89,12 @@ const router = createRouter({
       path: '/user/:username',
       name: 'userDetail',
       component: UserDetailView,
+      meta: { hideNavbar: false },
+    },
+    {
+      path: '/achievements',
+      name: 'achievements',
+      component: AchievementsView,
       meta: { hideNavbar: false },
     },
   ]

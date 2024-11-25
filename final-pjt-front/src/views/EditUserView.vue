@@ -1,6 +1,7 @@
 <template>
   <div>
     <h1 class="page-title">회원정보 수정</h1>
+    <h2>대표 도전 과제 배지 설정</h2>
     <button class="delete-button" @click="deleteUser">회원 탈퇴</button>
   </div>
 </template>
@@ -39,12 +40,6 @@ const deleteUser = () => {
 </script>
 
 <style scoped>
-.page-title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
-}
-
 .delete-button {
   background-color: #ff4d4f; /* 경고를 주는 빨간색 */
   color: #ffffff; /* 글씨를 흰색으로 */
