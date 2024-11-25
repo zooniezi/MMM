@@ -11,8 +11,10 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
-from django.db.models import Count
-
+from django.db.models import Count, Q
+import json
+import ast
+import random
 
 # 피드 정보 db저장용
 class FeedCreateView(APIView):
@@ -101,6 +103,160 @@ def user_feed_list(request, user_id):
     return JsonResponse(data, safe=False)
 
 ##################################################################################
+############################## 추천 알고리즘 #####################################
+
+def get_similar_feeds(watch_time, watch_with_who, genre_ids, user_id=None):
+    query = ~Q(user_id=user_id)
+    # 기본 필터로 데이터 조회
+    feeds = Feed.objects.filter(query)
+    
+    if isinstance(genre_ids, int):
+        genre_ids = [genre_ids]
+    # Python에서 genre_ids 조건 처리
+    if genre_ids:
+        filtered_feeds = []
+        for feed in feeds:
+            # if genre_ids in feed.genre_ids:
+            #     filtered_feeds.append(feed)
+            # JSON 문자열을 Python 리스트로 변환
+            try:
+                feed_genre_ids = json.loads(feed.genre_ids) if isinstance(feed.genre_ids, str) else feed.genre_ids
+            except json.JSONDecodeError:
+                continue  # JSON 파싱 실패 시 해당 레코드 무시
+
+            # genre_ids의 교집합 확인
+            if any(genre in feed_genre_ids for genre in genre_ids):
+                filtered_feeds.append(feed)
+        return filtered_feeds
+
+# 입력과 같은 조건의 영화들 불러오기
+def get_matched_feeds(watch_time, watch_with_who, genre_ids, user_id=None):
+    # 기본 필터 조건
+    query = Q(watch_time=watch_time) & Q(watch_with_who=watch_with_who)
+
+    # 본인이 작성한 기록은 제외
+    if user_id:
+        query &= ~Q(user_id=user_id)
+
+    # 기본 필터로 데이터 조회
+    feeds = Feed.objects.filter(query)
+    
+    if isinstance(genre_ids, int):
+        genre_ids = [genre_ids]
+    # if genre_ids:
+    #     filtered_feeds = []
+    #     for feed in feeds:
+    #         if genre_ids in feed.genre_ids:
+    #             filtered_feeds.append(feed)
+
+    # Python에서 genre_ids 조건 처리
+    if genre_ids:
+        filtered_feeds = []
+        for feed in feeds:
+            # JSON 문자열을 Python 리스트로 변환
+            try:
+                feed_genre_ids = json.loads(feed.genre_ids) if isinstance(feed.genre_ids, str) else feed.genre_ids
+            except json.JSONDecodeError:
+                continue  # JSON 파싱 실패 시 해당 레코드 무시
+
+            # genre_ids의 교집합 확인
+            if any(genre in feed_genre_ids for genre in genre_ids):
+                filtered_feeds.append(feed)
+        return filtered_feeds
+
+    return feeds
+
+
+
+def recommend_movies_upgrade(request):
+    user_id = request.GET.get('user_id')  # 사용자 ID
+    watch_time = request.GET.get('watch_time')  # 예: 'morning'
+    watch_with_who = request.GET.get('watch_with_who')  # 예: 'friends'
+    genre_ids_temp = request.GET.getlist('genre_id')  # 예: [28, 12]
+    genre_ids = int(genre_ids_temp[0])
+    selected_rating = request.GET.get('selectedRating')
+    # 문자열 자료 숫자로 변환하기
+    # for ids in genre_ids_temp:
+    #     genre_ids = int(ids)
+
+    similar_feeds = get_similar_feeds(watch_time, watch_with_who, genre_ids, user_id)
+    matched_feeds = get_matched_feeds(watch_time, watch_with_who, genre_ids, user_id)
+    
+    # 확인용 
+    print('similar feeds found : ',len(similar_feeds))
+    print('matched_feeds found : ', len(matched_feeds))
+    
+    # 중복된 영화는 제외하고 추천
+    recommended_movies = {}
+    for feed in matched_feeds:
+        if feed.movie_id not in recommended_movies:
+            recommended_movies[feed.movie_id] = {
+                "movie_id": feed.movie_id,
+                "genres": feed.genre_ids,
+                "rating": feed.rating,
+                "comment": feed.comment,
+            }
+    if len(recommended_movies) <= 10:   
+        for feed in similar_feeds:
+            if feed.movie_id not in recommended_movies:
+                recommended_movies[feed.movie_id] = {
+                    "movie_id": feed.movie_id,
+                    "genres": feed.genre_ids,
+                    "rating": feed.rating,
+                    "comment": feed.comment,
+                }
+    # 높은 평점 순으로 정렬된 추천 리스트 반환
+    recommend_movies_candidate = sorted(recommended_movies.values(), key=lambda x: x["rating"], reverse=True)
+
+    # rating별 인덱스 범위를 계산
+    from collections import defaultdict
+
+    def get_rating_ranges(data):
+        rating_ranges = defaultdict(list)
+        for index, item in enumerate(data):
+            rating = item['rating']
+            rating_ranges[rating].append(index)
+
+        # 각 rating의 첫 번째와 마지막 인덱스 계산
+        result = {}
+        for rating, indices in rating_ranges.items():
+            result[rating] = (min(indices), max(indices))
+
+        return result
+
+    # 실행
+    rating_ranges = get_rating_ranges(recommend_movies_candidate)
+
+    can_recommend_index = rating_ranges[selected_rating][1]
+    
+    if can_recommend_index >= 5:
+        sample_recommend_movies = random.sample(recommend_movies_candidate[:can_recommend_index+1],5)
+    else:
+        sample_recommend_movies = recommend_movies_candidate
+
+    # 추천 목록에 해당하는 영화 데이터 가져오기
+    movie_ids = [rec['movie_id'] for rec in sample_recommend_movies]
+
+    if movie_ids:
+        movies = Movie.objects.filter(id__in=movie_ids)
+    else:
+        movies = [] 
+
+    data = []
+    data = [
+    {
+        "id": movie.id,
+        "original_title": movie.original_title,
+        "overview": movie.overview,
+        "poster_path": movie.poster_path,
+        "title": movie.title,
+        "vote_average": movie.vote_average,
+    }
+    for movie in movies
+    ]
+    print(len(data))
+    return JsonResponse(data, safe=False)
+
 
 # 사용자의 입력 기반 영화 추천
 def recommend_movies_with_rating(request):

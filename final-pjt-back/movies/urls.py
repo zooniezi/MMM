@@ -5,7 +5,7 @@ app_name = 'movies'
 
 urlpatterns = [
     path('movie/create/', views.MovieCreateView.as_view(), name='movie_create'),
-    path('recommend/', views.recommend_movies_with_rating, name='recommend_movies_with_rating'),
+    path('recommend/', views.recommend_movies_upgrade, name='recommend_movies_with_rating'),
 
     path('feed/create/', views.FeedCreateView.as_view(), name='feed_create'),
     path('feeds/<int:user_id>/', views.user_feed_list, name='user_feed_list'),
