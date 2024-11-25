@@ -174,7 +174,7 @@ def recommend_movies_upgrade(request):
     watch_with_who = request.GET.get('watch_with_who')  # 예: 'friends'
     genre_ids_temp = request.GET.getlist('genre_id')  # 예: [28, 12]
     genre_ids = int(genre_ids_temp[0])
-    selected_rating = request.GET.get('selectedRating')
+    selected_rating = request.GET.get('selected_rating')
     # 문자열 자료 숫자로 변환하기
     # for ids in genre_ids_temp:
     #     genre_ids = int(ids)
@@ -218,7 +218,7 @@ def recommend_movies_upgrade(request):
             rating_ranges[rating].append(index)
 
         # 각 rating의 첫 번째와 마지막 인덱스 계산
-        result = {}
+        result = {5:(-1,-1),4:(-1,-1),3:(-1,-1),2:(-1,-1),1:(-1,-1)}
         for rating, indices in rating_ranges.items():
             result[rating] = (min(indices), max(indices))
 
@@ -226,8 +226,9 @@ def recommend_movies_upgrade(request):
 
     # 실행
     rating_ranges = get_rating_ranges(recommend_movies_candidate)
+    print(rating_ranges)
 
-    can_recommend_index = rating_ranges[selected_rating][1]
+    can_recommend_index = rating_ranges[int(selected_rating)][1]
     
     if can_recommend_index >= 5:
         sample_recommend_movies = random.sample(recommend_movies_candidate[:can_recommend_index+1],5)
