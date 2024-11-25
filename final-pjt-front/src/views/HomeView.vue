@@ -1,6 +1,13 @@
 <template>
   <div class="px-0">
     <h1 class="page-title">홈</h1>
+
+    <div class="home-description">
+      <p>허전하니까 나중에 무언가를 채워놓자.</p>
+    </div>
+
+    <br>
+
     <div class="row row-cols-3 g-1">
       <div v-for="(feed, index) in reversedFeeds" :key="index" class="col">
         <div v-if="feed.is_share_to_feed">
@@ -13,6 +20,9 @@
             <div class="comment-count position-absolute">
               <span v-if="feed.comments_count === null">Loading...</span>
               <span v-else>{{ feed.comments_count }} Comments</span>
+            </div>
+            <div class="username-watermark position-absolute ">
+              <span>@{{ feed.user }}</span>
             </div>
           </div>
         </div>
@@ -98,11 +108,10 @@
           </div>
         </div>
       </div>
-    </div>
-
-
-    
+    </div>   
   </div>
+
+  <br>
 </template>
 
 
@@ -298,6 +307,7 @@ const fetchFollowedUsersFeed = async () => {
       ...feed,
       comments_count: null, // 초기 상태
     }));
+    console.log(feedData.value)
 
     // 댓글 개수 동기화
     await syncCommentsCount();
@@ -339,6 +349,7 @@ onMounted(() => {
 <style scoped>
 /* 카드 설정 */
 .card-container {
+  border-radius: 10px;
   width: 100%;
   aspect-ratio: 1 / 1;
   background-color: black;
@@ -451,5 +462,31 @@ onMounted(() => {
 
 .list-group-item {
   word-wrap: break-word; /* 긴 텍스트 자동 줄바꿈 */
+}
+
+.username-watermark {
+  position: absolute; /* 포스터 위에 위치 */
+  top: 10px; /* 포스터 위쪽 여백 */
+  left: 10px; /* 포스터 왼쪽 여백 */
+  color: white; /* 텍스트 색상 */
+  font-size: 12px; /* 텍스트 크기 작게 조정 */
+  font-weight: bold; /* 텍스트 굵기 */
+  text-align: center;
+  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+  pointer-events: none; /* 클릭 방지 */
+  user-select: none; /* 텍스트 선택 방지 */
+
+  /* 시각적 개선 */
+  background: rgba(0, 0, 0, 0.4); /* 반투명 검정 배경 */
+  padding: 3px 8px; /* 텍스트 주변 여백 작게 조정 */
+  border-radius: 3px; /* 둥근 모서리 작게 조정 */
+  text-shadow: 0.5px 0.5px 2px rgba(0, 0, 0, 0.7); /* 텍스트 그림자 */
+}
+
+.home-description {
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 </style>

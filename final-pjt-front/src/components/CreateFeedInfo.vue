@@ -1,167 +1,221 @@
 <template>
-  <!-- 단계별 폼 -->
-  <form @submit.prevent="addFeed">
-    <div v-if="currentStep === 1">
-      <label for="watch_date">시청 날짜:</label>
-      <input type="date" id="watch_date" v-model="watchDate" />
-      <button type="button" @click="nextStep">다음</button>
-    </div>
-    <!-- 시청 시간 -->
-    <div v-if="currentStep === 2">
-      <label>시청 시간:</label>
-      <div>
-        <label>
-          <input type="radio" value="오전" v-model="watchTime" />
-          오전
-        </label>
-        <label>
-          <input type="radio" value="오후" v-model="watchTime" />
-          오후
-        </label>
-        <label>
-          <input type="radio" value="저녁" v-model="watchTime" />
-          저녁
-        </label>
-        <label>
-          <input type="radio" value="밤" v-model="watchTime" />
-          밤
-        </label>
-      </div>
-      <button type="button" @click="previousStep">이전</button>
-      <button type="button" @click="nextStep">다음</button>
+  <div class="form-container">
+    <!-- 단계 진행 표시 -->
+    <div class="progress-bar">
+      <div
+        class="progress"
+        :style="{ width: ((currentStep / totalSteps) * 100) + '%' }"
+      ></div>
     </div>
 
-    <!-- 시청 장소 -->
-    <div v-if="currentStep === 3">
-      <label>시청 장소:</label>
-      <div>
-        <label>
-          <input type="radio" value="영화관" v-model="watchPlace" />
-          영화관
-        </label>
-        <label>
-          <input type="radio" value="집" v-model="watchPlace" />
-          집
-        </label>
-        <label>
-          <input type="radio" value="야외" v-model="watchPlace" />
-          야외
-        </label>
-        <label>
-          <input type="radio" value="기타" v-model="watchPlace" />
-          기타
-        </label>
+    <form @submit.prevent="addFeed" class="step-form">
+      <!-- 단계별 폼 -->
+      <div v-if="currentStep === 1" class="form-step m-0">
+        <h2>시청 날짜</h2>
+        <input type="date" id="watch_date" v-model="watchDate" />
+        <div class="button-group d-flex justify-content-end">
+          <button type="button" class="btn-next" @click="nextStep">다음</button>
+        </div>
       </div>
-      <button type="button" @click="previousStep">이전</button>
-      <button type="button" @click="nextStep">다음</button>
-    </div>
 
-    <!-- 함께 본 사람 -->
-    <div v-if="currentStep === 4">
-      <label>함께 본 사람:</label>
-      <div>
-        <label>
-          <input type="radio" value="혼자" v-model="watchWithWho" />
-          혼자
-        </label>
-        <label>
-          <input type="radio" value="가족" v-model="watchWithWho" />
-          가족
-        </label>
-        <label>
-          <input type="radio" value="친구" v-model="watchWithWho" />
-          친구
-        </label>
-        <label>
-          <input type="radio" value="연인" v-model="watchWithWho" />
-          연인
-        </label>
-        <label>
-          <input type="radio" value="기타" v-model="watchWithWho" />
-          기타
-        </label>
+      <!-- 시청 시간 -->
+      <div v-if="currentStep === 2" class="form-step m-0">
+        <h2>시청 시간</h2>
+        <div class="options">
+          <label><input type="radio" value="오전" v-model="watchTime" /> 오전</label>
+          <label><input type="radio" value="오후" v-model="watchTime" /> 오후</label>
+          <label><input type="radio" value="저녁" v-model="watchTime" /> 저녁</label>
+          <label><input type="radio" value="밤" v-model="watchTime" /> 밤</label>
+        </div>
+        <div class="button-group">
+          <button type="button" class="btn-prev" @click="previousStep">이전</button>
+          <button type="button" class="btn-next" @click="nextStep">다음</button>
+        </div>
       </div>
-      <button type="button" @click="previousStep">이전</button>
-      <button type="button" @click="nextStep">다음</button>
-    </div>
-    
-    <div v-if="currentStep === 5">
-      <label>시청 이유:</label>
-      <div>
-        <label><input type="checkbox" value="재미있을 것 같아서" v-model="watchReason" /> 재미있을 것 같아서</label>
-        <label><input type="checkbox" value="추천을 받아서" v-model="watchReason" /> 추천을 받아서</label>
-        <label><input type="checkbox" value="좋아하는 배우가 나와서" v-model="watchReason" /> 좋아하는 배우가 나와서</label>
-        <label><input type="checkbox" value="좋아하는 영화감독이라" v-model="watchReason" /> 좋아하는 영화감독이라</label>
-        <label><input type="checkbox" value="기타" v-model="watchReason" /> 기타</label>
-      </div>
-      <button type="button" @click="previousStep">이전</button>
-      <button type="button" @click="nextStep">다음</button>
-    </div>
 
-    <!-- 평점 -->
-    <div v-if="currentStep === 6">
-      <label>평점:</label>
-      <div>
-        <label>
-          <input type="radio" value="1" v-model.number="rating" />
-          1점
-        </label>
-        <label>
-          <input type="radio" value="2" v-model.number="rating" />
-          2점
-        </label>
-        <label>
-          <input type="radio" value="3" v-model.number="rating" />
-          3점
-        </label>
-        <label>
-          <input type="radio" value="4" v-model.number="rating" />
-          4점
-        </label>
-        <label>
-          <input type="radio" value="5" v-model.number="rating" />
-          5점
-        </label>
+      <!-- 시청 장소 -->
+      <div v-if="currentStep === 3" class="form-step m-0">
+        <h2>시청 장소</h2>
+        <div class="options">
+          <label>
+            <input type="radio" value="영화관" v-model="watchPlace" />
+            영화관
+          </label>
+          <label>
+            <input type="radio" value="집" v-model="watchPlace" />
+            집
+          </label>
+          <label>
+            <input type="radio" value="야외" v-model="watchPlace" />
+            야외
+          </label>
+          <label>
+            <input type="radio" value="기타" v-model="watchPlace" />
+            기타
+          </label>
+        </div>
+        <div class="button-group">
+          <button type="button" class="btn-prev" @click="previousStep">이전</button>
+          <button type="button" class="btn-next" @click="nextStep">다음</button>
+        </div>
       </div>
-      <button type="button" @click="previousStep">이전</button>
-      <button type="button" @click="nextStep">다음</button>
-    </div>
-  
-    <div v-if="currentStep === 7">
-      <label for="comment">한줄 평:</label>
-      <textarea id="comment" placeholder="영화에 대한 한줄 평을 입력하세요" v-model="comment"></textarea>
-      <button type="button" @click="previousStep">이전</button>
-      <button type="button" @click="nextStep">다음</button>
-    </div>
-  
-    <div v-if="currentStep === 8">
-      <label for="is_share_to_feed">
-        <input
-          type="checkbox"
-          id="is_share_to_feed"
-          v-model="isShareToFeed"
-        />
-        피드를 공유하시겠습니까?
-      </label>
-      <button type="button" @click="previousStep">이전</button>
-      <button type="submit">저장</button>
-    </div>
-  </form>
 
-  <div v-if="isLoading" class="loading">영화 정보를 불러오는 중...</div>
-  <div v-else-if="movie">
-    <h2>{{ movie.title }}</h2>
-    <img
-      :src="getImageUrl(movie.poster_path)"
-      :alt="movie.title"
-      class="movie-poster"
-    />
-    <p><strong>개봉일:</strong> {{ movie.release_date }}</p>
-    <p><strong>평점:</strong> {{ movie.vote_average }}</p>
-    <p><strong>줄거리:</strong> {{ movie.overview || '내용 없음' }}</p>
-    <button @click="goBack">뒤로 가기</button>
+      <!-- 함께 본 사람 -->
+      <div v-if="currentStep === 4" class="form-step m-0">
+        <h2>함께 본 사람</h2>
+        <div class="options">
+          <label>
+            <input type="radio" value="혼자" v-model="watchWithWho" />
+            혼자
+          </label>
+          <label>
+            <input type="radio" value="가족" v-model="watchWithWho" />
+            가족
+          </label>
+          <label>
+            <input type="radio" value="친구" v-model="watchWithWho" />
+            친구
+          </label>
+          <label>
+            <input type="radio" value="연인" v-model="watchWithWho" />
+            연인
+          </label>
+          <label>
+            <input type="radio" value="기타" v-model="watchWithWho" />
+            기타
+          </label>
+        </div>
+        <div class="button-group">
+          <button type="button" class="btn-prev" @click="previousStep">이전</button>
+          <button type="button" class="btn-next" @click="nextStep">다음</button>
+        </div>
+      </div>
+
+      <!-- 시청 이유 -->
+      <div v-if="currentStep === 5" class="form-step m-0">
+        <h2>시청 이유</h2>
+        <div class="options">
+          <label><input type="checkbox" value="재미있을 것 같아서" v-model="watchReason" /> 재미있을 것 같아서</label>
+          <label><input type="checkbox" value="추천을 받아서" v-model="watchReason" /> 추천을 받아서</label>
+          <label><input type="checkbox" value="좋아하는 배우가 나와서" v-model="watchReason" /> 좋아하는 배우가 나와서</label>
+          <label><input type="checkbox" value="좋아하는 영화감독이라" v-model="watchReason" /> 좋아하는 영화감독이라</label>
+          <label><input type="checkbox" value="기타" v-model="watchReason" /> 기타</label>
+        </div>
+        <div class="button-group">
+          <button type="button" class="btn-prev" @click="previousStep">이전</button>
+          <button type="button" class="btn-next" @click="nextStep">다음</button>
+        </div>
+      </div>
+
+      <!-- 평점 -->
+      <div v-if="currentStep === 6" class="form-step m-0">
+        <h2>평점</h2>
+        <div class="options">
+          <label>
+            <input type="radio" value="1" v-model.number="rating" />
+            1점
+          </label>
+          <label>
+            <input type="radio" value="2" v-model.number="rating" />
+            2점
+          </label>
+          <label>
+            <input type="radio" value="3" v-model.number="rating" />
+            3점
+          </label>
+          <label>
+            <input type="radio" value="4" v-model.number="rating" />
+            4점
+          </label>
+          <label>
+            <input type="radio" value="5" v-model.number="rating" />
+            5점
+          </label>
+        </div>
+        <div class="button-group">
+          <button type="button" class="btn-prev" @click="previousStep">이전</button>
+          <button type="button" class="btn-next" @click="nextStep">다음</button>
+        </div>
+      </div>
+
+      <!-- 한줄 평 -->
+      <div v-if="currentStep === 7" class="form-step m-0">
+        <h2>한줄 평</h2>
+        <textarea
+          id="comment"
+          placeholder="영화에 대한 한줄 평을 입력하세요"
+          v-model="comment"
+        ></textarea>
+        <div class="button-group">
+          <button type="button" class="btn-prev" @click="previousStep">이전</button>
+          <button type="button" class="btn-next" @click="nextStep">다음</button>
+        </div>
+      </div>
+
+      <!-- 공유 여부 -->
+      <div v-if="currentStep === 8" class="form-step m-0">
+        <h2>피드 공유</h2>
+        <label for="is_share_to_feed">
+          <input
+            type="checkbox"
+            id="is_share_to_feed"
+            v-model="isShareToFeed"
+          />
+          피드를 공유하시겠습니까?
+        </label>
+        <div class="button-group">
+          <button type="button" class="btn-prev" @click="previousStep">이전</button>
+          <button type="submit" class="btn-submit">저장</button>
+        </div>
+      </div>
+    </form>
+
+    <div v-if="isLoading" class="loading text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-3">영화 정보를 불러오는 중...</p>
+    </div>
   </div>
-  <div v-else class="error">영화 정보를 불러올 수 없습니다.</div>
+
+  <div v-if="isLoading" class="loading text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3">영화 정보를 불러오는 중...</p>
+  </div>
+
+  <div v-else-if="movie" class="container mt-4">
+    <div class="card mx-auto border-0 shadow-none" style="max-width: 600px;">
+      <img
+        :src="getImageUrl(movie.poster_path)"
+        :alt="movie.title"
+        class="card-img-top"
+      />
+      <div class="card-body">
+        <h2 class="card-title text-center">{{ movie.title }}</h2>
+        <p class="card-text">
+          <strong>개봉일:</strong> {{ movie.release_date }}
+        </p>
+        <p class="card-text">
+          <strong>평점:</strong> {{ movie.vote_average }}
+        </p>
+        <p class="card-text">
+          <strong>줄거리:</strong> {{ movie.overview || '내용 없음' }}
+        </p>
+        <div class="text-center">
+          <button @click="goBack" class="btn btn-primary">뒤로 가기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div v-else class="error text-center py-5">
+    <div class="alert alert-danger" role="alert">
+      영화 정보를 불러올 수 없습니다.
+    </div>
+  </div>
+
 
 </template>
 
@@ -185,6 +239,7 @@ const userId = ref(null)
 
 // 단계별 폼 관리
 const currentStep = ref(1) // 현재 단계
+const totalSteps = ref(8)
 
 // 입력 상태
 const watchDate = ref(null)
@@ -350,39 +405,109 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.loading,
-.error {
+.form-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.progress {
+  height: 100%;
+  background-color: #ffa200;
+  transition: width 0.3s ease-in-out;
+}
+
+.form-step {
   text-align: center;
-  margin-top: 20px;
-  font-size: 18px;
-  color: #999;
+  margin-bottom: 20px;
 }
 
-form {
-  margin-top: 20px;
+label {
+  display: block;
+  font-size: 16px;
+  margin: 10px 0 5px;
 }
 
-input,
-select,
+input[type="date"],
 textarea {
   width: 100%;
-  margin: 10px 0;
   padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.options label {
+  display: inline-block;
+  margin-right: 10px;
+  font-size: 14px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
 }
 
 button {
-  margin: 10px 5px;
   padding: 10px 20px;
-  background-color: #42b883;
-  color: white;
+  font-size: 14px;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
 }
 
-button:hover {
-  background-color: #358a6b;
+.btn-next {
+  background-color: #ffa200;
+  color: white;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.btn-next:hover {
+  background-color: #eb9501;
+}
+
+.btn-prev {
+  background-color: #f1f1f1;
+  color: #333;
+}
+
+.btn-prev:hover {
+  background-color: #ddd;
+}
+
+.loading .spinner-border {
+  margin-bottom: 15px;
+}
+
+h2 {
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+
+.button-group.right-align {
+  text-align: right; /* 버튼을 오른쪽으로 정렬 */
+}
+
+.btn-submit {
+  background-color: #ffa200;
+  color: white;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.btn-submit:hover {
+  background-color: #eb9501;
 }
 </style>

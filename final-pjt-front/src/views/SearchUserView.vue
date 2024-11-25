@@ -1,28 +1,29 @@
 <template>
+  <h1 class="page-title">유저 찾기</h1>
   <div>
-    <h1>유저 찾기</h1>
+    
     <input 
       v-model="searchQuery" 
       type="text" 
       placeholder="Search users..." 
       @input="filterUsers"
+      class="mb-3"
     />
-    <ul v-if="filteredUsers.length > 0">
-      <li 
+    <ul v-if="filteredUsers.length > 0" class="m-0">
+      <span 
         v-for="user in filteredUsers" 
         :key="user.id" 
         @click="goToUserDetail(user.username)"
-        class="user-item"
+        class="user-item m-0"
       >
         {{ user.username }}
-      </li>
+      </span>
     </ul>
-    <p v-else>검색 결과가 없습니다.</p>
-    <p v-if="loading">로딩 중...</p>
-    <p v-if="error">{{ error }}</p>
+    <p v-else class="empty-result">검색 결과가 없습니다.</p>
+    <p v-if="loading" class="loading">로딩 중...</p>
+    <p v-if="error" class="error">{{ error }}</p>
   </div>
 </template>
-
 
 <script setup>
 import { useMovieStore } from '@/stores/movie';
@@ -45,7 +46,6 @@ const fetchUsers = async () => {
   try {
     const response = await axios.get(`${store.SERVER_API_URL}/accounts/allusers/without_admin/`)
     users.value = response.data
-    console.log(users.value)
     filterUsers() // 초기 필터링
   } catch (err) {
     error.value = '사용자 목록을 가져오는 데 실패했습니다.'
@@ -78,12 +78,28 @@ onMounted(() => {
 })
 </script>
 
-
 <style scoped>
+/* 전체 배경 및 폰트 */
+div {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
 input {
   margin-bottom: 10px;
-  padding: 5px;
+  padding: 8px;
   width: 100%;
+  border: 2px solid #ffa200;
+  border-radius: 20px;
+  outline: none;
+  font-size: 16px;
+}
+
+input:focus {
+  border-color: #ff9900;
+  box-shadow: 0 0 8px rgba(255, 200, 97, 0.4);
 }
 
 ul {
@@ -91,18 +107,39 @@ ul {
   padding: 0;
 }
 
-li.user-item {
-  padding: 5px 0;
+span.user-item {
+  padding: 10px;
   cursor: pointer;
-  color: #007BFF;
+  color: #ffffff;
+  background-color: #ffa200;
+  border-radius: 15px;
+  text-align: center;
+  margin-bottom: 5px;
+  transition: background-color 0.3s ease;
 }
 
-li.user-item:hover {
-  text-decoration: underline;
+span.user-item:hover {
+  background-color: #ffb73a;
 }
 
-p {
-  color: #777;
+p.empty-result, p.loading, p.error {
+  color: #ffa200;
   font-style: italic;
+  text-align: center;
+  margin-top: 10px;
+}
+
+p.empty-result {
+  font-size: 16px;
+}
+
+p.loading {
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.6;
+  }
 }
 </style>

@@ -1,36 +1,57 @@
 <template>
   <div class="movie-search">
-    <h2>영화 검색</h2>
-    <input
-      type="text"
-      placeholder="영화 제목을 입력하세요"
-      v-model="searchQuery"
-    />
-    <button @click="fetchMovies">확인</button>
-
-    <div v-if="isLoading">로딩 중...</div>
-    <div v-else-if="movies.length" class="movie-list">
-      <ul>
-        <li v-for="movie in movies" :key="movie.id" @click="goToMovieInfo(movie)">
-          <img
-            :src="getImageUrl(movie.poster_path)"
-            :alt="movie.title"
-            class="movie-poster"
-          />
-          <p>{{ movie.title }} ({{ movie.release_date?.slice(0, 4) || 'N/A' }})</p>
-        </li>
-      </ul>
+    <h2 class="my-font-size">{{ title }}</h2>
+    <div class="input-group mb-3">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="영화 제목을 입력하세요"
+        v-model="searchQuery"
+        @keyup.enter="fetchMovies"
+      />
+      <button class="btn btn-primary" @click="fetchMovies">확인</button>
     </div>
-    <div v-else-if="!isLoading && movies.length === 0 && searchQuery.trim()">
+
+    <div v-if="isLoading" class="text-center mt-3">
+      <div class="spinner-border text-warning" role="status">
+        <span class="visually-hidden">로딩 중...</span>
+      </div>
+    </div>
+    <div v-else-if="movies.length" class="movie-list mt-4">
+      <div class="row">
+        <div
+          class="col-sm-6 col-md-4 col-lg-3 mb-3"
+          v-for="movie in movies"
+          :key="movie.id"
+          @click="goToMovieInfo(movie)"
+        >
+          <div class="card h-100">
+            <img
+              :src="getImageUrl(movie.poster_path)"
+              :alt="movie.title"
+              class="card-img-top movie-poster"
+            />
+            <div class="card-body text-center">
+              <h5 class="card-title">{{ movie.title }}</h5>
+              <p class="card-text">
+                개봉: {{ movie.release_date?.slice(0, 4) || 'N/A' }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      v-else-if="!isLoading && movies.length === 0 && searchQuery.trim()"
+      class="text-center mt-3"
+    >
       검색 결과가 없습니다.
     </div>
   </div>
 </template>
 
-
-
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
@@ -39,14 +60,33 @@ const TMDB_TOKEN = import.meta.env.VITE_TMDB_TOKEN
 const BASE_URL = 'https://api.themoviedb.org/3'
 
 // 상태 관리
-const searchQuery = ref('') // 입력값
-const movies = ref([]) // 검색 결과
-const isLoading = ref(false) // 로딩 상태
+const searchQuery = ref('')
+const movies = ref([])
+const isLoading = ref(false)
+
+// 제목 변경 상태 및 반복 로직
+const title = ref('영화를 선택하세요')
+const titles = ['영화를 선택하세요', '영화를 선택하세요.', '영화를 선택하세요..', '영화를 선택하세요...']
+let titleIndex = 0
+let intervalId
+
+const updateTitle = () => {
+  title.value = titles[titleIndex]
+  titleIndex = (titleIndex + 1) % titles.length
+}
+
+onMounted(() => {
+  intervalId = setInterval(updateTitle, 1000) // 0.5초 간격으로 변경
+})
+
+onUnmounted(() => {
+  clearInterval(intervalId)
+})
 
 // 이미지 URL 생성
 const getImageUrl = (path) => {
   return path
-    ? `https://image.tmdb.org/t/p/w200${path}`
+    ? `https://image.tmdb.org/t/p/w500${path}`
     : 'https://via.placeholder.com/200x300?text=No+Image'
 }
 
@@ -91,60 +131,29 @@ const goToMovieInfo = (movie) => {
 }
 </script>
 
-
-
 <style scoped>
 .movie-search {
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto;
   text-align: center;
 }
 
-input {
-  width: 80%;
-  padding: 10px;
-  margin-top: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  margin-left: 10px;
-  background-color: #42b883;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-button:hover {
-  background-color: #358a6b;
-}
-
-.movie-list {
-  margin-top: 20px;
-}
-
 .movie-poster {
-  width: 100px;
-  height: 150px;
+  height: 300px;
   object-fit: cover;
 }
 
-li {
-  list-style: none;
+.card {
   cursor: pointer;
-  margin: 10px 0;
-  transition: background-color 0.2s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-li:hover {
-  background-color: #f0f0f0;
+.card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.my-font-size {
+  font-size: 1rem;
 }
 </style>
-
-

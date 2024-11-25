@@ -137,6 +137,6 @@ export const useMovieStore = defineStore('movie', () => {
     signUp, 
     logIn, 
     logOut, 
-    fetchUserId 
+    fetchUserId,
   }
 }, { persist: true })

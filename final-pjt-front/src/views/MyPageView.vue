@@ -2,7 +2,7 @@
   <div class="px-0">
     <h1 class="page-title">{{ userName }}의 마이페이지</h1>
 
-    <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex justify-content-between align-items-center profile-section-style">
       <!-- 왼쪽: 프로필 정보 -->
       <div class="profile-section">
         <p>총 피드: {{ totalFeeds }}</p>
@@ -34,7 +34,7 @@
       </div>
     </div>
 
-    <hr class="bg-dark" style="height: 2px;">
+    <br>
 
     <div class="row row-cols-3 g-1">
       <div v-for="(feed, index) in reversedFeeds" :key="index" class="col">
@@ -73,7 +73,7 @@
               </div>
               <div class="modal-body d-inline">
                 <div class="pt-2">
-                  <p><strong>영화 제목:</strong> {{ selectedFeed.movie?.title }}</p>
+                  <p><strong>영화 제목:</strong> {{ selectedFeed.movie_title }}</p>
                   <p><strong>관람 날짜:</strong> {{ selectedFeed.watch_date }}</p>
                   <p><strong>시간:</strong> {{ selectedFeed.watch_time }}</p>
                   <p><strong>장소:</strong> {{ selectedFeed.watch_place }}</p>
@@ -157,6 +157,8 @@
 
 
   </div>
+
+  <br>
 </template>
 
 
@@ -487,6 +489,7 @@ onMounted(async () => {
 /* 카드 설정 */
 .card-container {
   width: 100%;
+  border-radius: 10px;
   aspect-ratio: 1 / 1;
   background-color: black;
   overflow: hidden;
@@ -637,4 +640,10 @@ onMounted(async () => {
   width: auto;
 }
 
+.profile-section-style {
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
 </style>
