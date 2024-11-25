@@ -287,7 +287,7 @@ const postComment = async () => {
       { content: newComment.value },
       { headers: { Authorization: `Token ${store.serverToken}` } }
     );
-    comments.value.unshift(response.data);
+    comments.value.push(response.data);
     newComment.value = "";
     commentCount.value++;
     updateFeedCommentCount(selectedFeed.value.id, commentCount.value);
@@ -380,8 +380,7 @@ onMounted(() => {
   bottom: 10px;
   left: 10px;
   color: white;
-  font-size: 14px;
-  font-weight: bold;
+  font-size: 16px;
   background-color: rgba(0, 0, 0, 0.6);
   padding: 5px 10px;
   border-radius: 5px;
@@ -470,8 +469,7 @@ onMounted(() => {
   top: 10px; /* 포스터 위쪽 여백 */
   left: 10px; /* 포스터 왼쪽 여백 */
   color: white; /* 텍스트 색상 */
-  font-size: 12px; /* 텍스트 크기 작게 조정 */
-  font-weight: bold; /* 텍스트 굵기 */
+  font-size: 16px; /* 텍스트 크기 작게 조정 */
   text-align: center;
   white-space: nowrap; /* 텍스트 줄바꿈 방지 */
   pointer-events: none; /* 클릭 방지 */

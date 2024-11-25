@@ -372,7 +372,7 @@ const postComment = async () => {
         },
       }
     );
-    comments.value.unshift(response.data); // 새 댓글 추가
+    comments.value.push(response.data); // 새 댓글 추가
     newComment.value = ""; // 입력 필드 초기화
   } catch (err) {
     console.error("댓글 등록 실패:", err);
