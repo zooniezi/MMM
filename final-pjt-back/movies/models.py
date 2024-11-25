@@ -23,6 +23,7 @@ class Movie(models.Model):
     poster_path = models.CharField(max_length=255, blank=True, null=True)  # 포스터 경로
     title = models.CharField(max_length=255)  # 영화 제목
     vote_average = models.FloatField()  # 평점
+    runtime = models.IntegerField(default=0) # 런타임(상영시간)
 
     def __str__(self):
         return self.title
