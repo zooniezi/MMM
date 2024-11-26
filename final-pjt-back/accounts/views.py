@@ -97,3 +97,18 @@ def get_user_info(request, username):
     user = get_object_or_404(User, username=username)
     serializer = UserInfoSerializers(user)
     return Response(serializer.data)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_profile(request):
+    user = request.user  # 현재 로그인된 사용자
+    new_profile = request.data.get('profile')  # 클라이언트로부터 profile 데이터 받기
+
+    if not new_profile:
+        return Response({'error': 'Profile content cannot be empty.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Profile 업데이트
+    user.profile = new_profile
+    user.save()
+
+    return Response({'message': 'Profile updated successfully!', 'profile': user.profile}, status=status.HTTP_200_OK)
