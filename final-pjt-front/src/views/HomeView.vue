@@ -161,6 +161,8 @@ import { ref, computed, onMounted } from "vue"
 import { useMovieStore } from "@/stores/movie"
 import axios from "axios"
 import { useRouter } from "vue-router";
+import AchievementPopup from "@/components/AchievementPopup.vue";
+
 
 // 상태 관리
 const store = useMovieStore();
@@ -402,6 +404,7 @@ const goToMovieInfo = (movieId) => {
     params: { id: movieId },
   })
 }
+
 
 
 // 컴포넌트 마운트 시 데이터 가져오기
