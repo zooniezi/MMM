@@ -30,6 +30,7 @@ import AppNavbar from './components/AppNavbar.vue';
 /* 메인 콘텐츠 */
 .container.content {
   flex-grow: 1; /* 남은 공간을 차지하도록 설정 */
+  max-width: 800px;
 }
 
 /* 푸터 스타일 */
