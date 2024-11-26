@@ -4,6 +4,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Feed, Movie, Comment, Emoji
+
+from achievements.models import Achievement
+
 from notifications.models import Notification
 from .serializers import FeedSerializer, MovieSerializer, CommentSerializer, EmojiSerializer
 from rest_framework.decorators import api_view, permission_classes
@@ -16,12 +19,23 @@ import json
 import ast
 import random
 
+from django.contrib.auth import get_user_model
+
 # 피드 정보 db저장용
 class FeedCreateView(APIView):
     def post(self, request):
         serializer = FeedSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user)  # DB에 저장
+            # 작성된 Feed 개수 확인
+            feed_count = Feed.objects.filter(user=request.user).count()
+            
+            # 도전과제 - 1: 산뜻한 출발
+            if feed_count >= 1:
+                # 첫 번째 Feed 작성 시 도전과제 추가
+                Achievement.objects.get_or_create(user=request.user, achievement_id=1)
+
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -32,7 +46,11 @@ class MovieCreateView(APIView):
         serializer = MovieSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()  # DB에 저장
+            # 도전과제 - 7: 아무도 등록하지 않았던 영화 등록
+            Achievement.objects.get_or_create(user=request.user, achievement_id=7)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 ##################################################################################
@@ -57,7 +75,6 @@ def get_movie_by_id(request):
 def followed_users_feed_list(request):
     user = request.user
     followed_users = user.followings.all()
-
     feeds = Feed.objects.filter(user__in=followed_users, is_share_to_feed=True).order_by('-created_at')[:50]
     feed_data = []
     for feed in feeds:
@@ -82,8 +99,27 @@ def followed_users_feed_list(request):
 
 # 프로필 페이지 피드 출력용
 def user_feed_list(request, user_id):
+    user = get_object_or_404(get_user_model(), id=user_id)
     # 사용자 ID에 해당하는 Feed 데이터 가져오기
     feeds = Feed.objects.filter(user_id=user_id)
+
+    # 도전과제 - 6,11 : 영화 등록 수 100개, 1000개 돌파
+    feed_count = feeds.count()
+    if feed_count >= 100:
+        Achievement.objects.get_or_create(user=user, achievement_id=6)
+    if feed_count >= 1000:
+        Achievement.objects.get_or_create(user=user, achievement_id=11)
+    # 도전과제 - 4: 혼자서 영화 10개 이상 보기
+    feed_count = Feed.objects.filter(user_id=user_id,watch_with_who='혼자').count()
+    print(feed_count)
+    if feed_count >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=4)
+    # 도전과제 - 5: 연인과 영화 10개 이상 보기
+    feed_count = Feed.objects.filter(user_id=user_id,watch_with_who='연인').count()
+    if feed_count >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=5)
+
+    
 
     # JSON 형태로 반환할 데이터 구성
     data = []
