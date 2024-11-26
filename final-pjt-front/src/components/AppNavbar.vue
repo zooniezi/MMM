@@ -42,6 +42,9 @@ import logo from '@/assets/logo2.png'
           <li class="nav-item">
             <RouterLink :to="{ name: 'myPage' }" class="nav-link">마이페이지</RouterLink>
           </li>
+          <li class="nav-item">
+            <RouterLink :to="{ name: 'achievements' }" class="nav-link">도전과제</RouterLink>
+          </li>
         </ul>
       </div>
     </div>
@@ -49,6 +52,10 @@ import logo from '@/assets/logo2.png'
 </template>
 
 <style scoped>
+.container {
+  max-width: 800px;
+}
+
 .bg-color {
   background-color: #F9F9F9;
 }

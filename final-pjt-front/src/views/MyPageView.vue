@@ -21,16 +21,28 @@
       </div>
 
       <!-- 오른쪽: 옵션 버튼 -->
-      <div class="profile-options mt-auto">
-        <RouterLink
-          :to="{ name: 'editUser' }"
-          class="btn btn-outline-primary me-2"
-        >
-          회원정보 수정
-        </RouterLink>
-        <button @click="goLogOut" class="btn btn-outline-danger">
-          로그아웃
-        </button>
+      <div class="profile-options mt-auto d-flex flex-column align-items-end">
+        <!-- 도전과제 뱃지 -->
+        <div class="badge-container d-flex justify-content-between mb-3">
+          <img
+            v-for="index in 5"
+            :key="index"
+            src="https://picsum.photos/250/250"
+            alt="뱃지"
+            class="badge-icon"
+          />
+        </div>
+        <div class="d-flex ms-auto">
+          <RouterLink
+            :to="{ name: 'editUser' }"
+            class="btn btn-outline-primary me-2"
+          >
+            회원정보 수정
+          </RouterLink>
+          <button @click="goLogOut" class="btn btn-outline-danger">
+            로그아웃
+          </button>
+        </div>
       </div>
     </div>
 
@@ -646,5 +658,22 @@ onMounted(async () => {
   background: #f9f9f9;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 뱃지 컨테이너 */
+.badge-container {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 뱃지 아이콘 */
+.badge-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 20%;
+  object-fit: cover;
 }
 </style>

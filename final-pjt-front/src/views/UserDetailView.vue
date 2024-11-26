@@ -1,26 +1,41 @@
 <template>
   <div class="px-0">
     <h1 class="page-title">{{ userName }}의 페이지</h1>
-    <div class="profile-section">
-      <p>총 피드: {{ userFeeds.length }}</p>
+    <div class="d-flex justify-content-between align-items-center profile-section">
       <div>
+        <p>총 피드: {{ userFeeds.length }}</p>
         <p>
           팔로워:
           <span class="link" @click="openFollowModal('followers')">{{ followerCount }}</span>
         </p>
-        <p>
+        <p class="m-0">
           팔로잉:
           <span class="link" @click="openFollowModal('followings')">{{ followingCount }}</span>
         </p>
       </div>
-  
-      <button 
-        @click="toggleFollow" 
-        :class="['btn', isFollowing ? 'btn-outline-danger' : 'btn-outline-primary']"
-      >
-        {{ isFollowing ? '언팔로우' : '팔로우' }}
-      </button>
+      
+      
+      <div class="profile-options mt-auto d-flex flex-column align-items-end">
+        <!-- 도전과제 뱃지 -->
+        <div class="badge-container d-flex justify-content-between mb-3">
+          <img
+            v-for="index in 5"
+            :key="index"
+            src="https://picsum.photos/250/250"
+            alt="뱃지"
+            class="badge-icon"
+          />
+        </div>
+        <button 
+          @click="toggleFollow" 
+          :class="['btn', isFollowing ? 'btn-outline-danger' : 'btn-outline-primary']"
+        >
+          {{ isFollowing ? '언팔로우' : '팔로우' }}
+        </button>
+      </div>
     </div>
+
+    
 
     <br>
 
@@ -691,5 +706,22 @@ onMounted(async () => {
   background: #f9f9f9;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 뱃지 컨테이너 */
+.badge-container {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 뱃지 아이콘 */
+.badge-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 20%;
+  object-fit: cover;
 }
 </style>
