@@ -208,7 +208,7 @@ def user_feed_list(request, user_id):
     if feed_count >= 100:
         Achievement.objects.get_or_create(user=user, achievement_id=6)
     if feed_count >= 1000:
-        Achievement.objects.get_or_create(user=user, achievement_id=11)
+        Achievement.objects.get_or_create(user=user, achievement_id=28)
     # 도전과제 - 4: 혼자서 영화 10개 이상 보기
     feed_count = Feed.objects.filter(user_id=user_id,watch_with_who='혼자').count()
     if feed_count >= 10:
