@@ -17,7 +17,7 @@
       
       <div class="profile-options mt-auto d-flex flex-column align-items-end">
         <!-- 도전과제 뱃지 -->
-        <div class="badge-container d-flex justify-content-between mb-3">
+        <!-- <div class="badge-container d-flex justify-content-between mb-3">
           <img
             v-for="index in 5"
             :key="index"
@@ -25,7 +25,8 @@
             alt="뱃지"
             class="badge-icon"
           />
-        </div>
+        </div> -->
+
         <button 
           @click="toggleFollow" 
           :class="['btn', isFollowing ? 'btn-outline-danger' : 'btn-outline-primary']"
@@ -53,6 +54,14 @@
           </div>
         </div>
       </div>
+
+      <!-- 빈 공간 로고 채우기 -->
+      <div v-for="n in (3 - (reversedFeeds.length % 3))" v-if="reversedFeeds.length % 3 !== 0" :key="'placeholder-' + n" class="col">
+        <div class="card-container bg-light">
+          <img src="../assets/logo2.png" alt="로고" class="logo-placeholder" />
+        </div>
+      </div>
+
     </div>
 
     <!-- 모달 -->
@@ -723,5 +732,11 @@ onMounted(async () => {
   height: 50px;
   border-radius: 20%;
   object-fit: cover;
+}
+
+.logo-placeholder {
+  max-width: 50%;
+  max-height: 50%;
+  opacity: 0.6; /* 로고가 부드럽게 보이도록 설정 */
 }
 </style>

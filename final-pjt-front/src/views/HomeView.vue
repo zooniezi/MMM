@@ -2,9 +2,40 @@
   <div class="px-0">
     <h1 class="page-title">홈</h1>
 
-    <div class="home-description">
-      <p>허전하니까 나중에 무언가를 채워놓자.</p>
+    <div v-if="recommendedMovie && recommendedMovie[0]">
+
+      <div class="container my-4 p-3 bg-light rounded shadow-sm">
+        <h3 class="text-center mb-4">추천 영화</h3>
+        <p v-if="recommendedMovie[0].related_movie_title"class="text-center mb-4">
+          <strong>{{ store.userName }}</strong> 님이 보신
+          <strong class="text-warning">{{ recommendedMovie[0].related_movie_title }}</strong>와 비슷한 영화에요.
+        </p>
+        <p v-else>
+          이 영화를 추천드려요!
+        </p>
+        <div class="row align-items-center">
+          <!-- 왼쪽: 포스터 -->
+          <div class="col-md-4 text-center mb-3 mb-md-0">
+            <img
+              :src="getImageUrl(recommendedMovie[0].movie_posterpath)"
+              alt="포스터"
+              class="img-fluid rounded shadow-sm"
+            />
+          </div>
+          <!-- 오른쪽: 제목, 개요, 버튼 -->
+          <div class="col-md-8">
+            <p><strong>제목:</strong> {{ recommendedMovie[0].movie_title }}</p>
+            <p><strong>개요:</strong> {{ recommendedMovie[0].movie_overview }}</p>
+            <button class="btn btn-primary mt-3" @click="goToMovieInfo(recommendedMovie[0].movie_id)">
+              피드 작성
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
+    <div v-else>추천 영화를 불러오는 중입니다...</div>
+
 
     <br>
 
@@ -27,6 +58,14 @@
           </div>
         </div>
       </div>
+
+      <!-- 빈 공간 로고 채우기 -->
+      <div v-for="n in (3 - (feedData.length % 3))" v-if="feedData.length % 3 !== 0" :key="'placeholder-' + n" class="col">
+        <div class="card-container bg-light">
+          <img src="../assets/logo2.png" alt="로고" class="logo-placeholder" />
+        </div>
+      </div>
+
     </div>
 
     <!-- 모달 -->
@@ -121,6 +160,7 @@
 import { ref, computed, onMounted } from "vue"
 import { useMovieStore } from "@/stores/movie"
 import axios from "axios"
+import { useRouter } from "vue-router";
 
 // 상태 관리
 const store = useMovieStore();
@@ -133,6 +173,8 @@ const commentCount = ref(0); // 댓글 개수 상태 추가
 const selectedEmoji = ref(null);
 const emojiCounts = ref({});
 const currentUser = store.userName
+
+const router = useRouter()
 
 // 이미지 URL 처리
 const getImageUrl = (path) => {
@@ -339,10 +381,33 @@ const deleteComment = async (commentId) => {
   }
 };
 
+const recommendedMovie = ref([])
+
+const fetchRecommendedMovies = async () => {
+  try {
+    const response = await axios.get(`${store.SERVER_API_URL}/movies/feeds/recommend/${store.userId}`, {
+      headers: { Authorization: `Token ${store.serverToken}` },
+    })
+    recommendedMovie.value = response.data
+    console.log(recommendedMovie.value)
+  } catch (err) {
+    console.error("추천 영화 가져오기 실패:", err)
+  }
+}
+
+const goToMovieInfo = (movieId) => {
+
+  router.push({
+    name: 'createFeedInfo',
+    params: { id: movieId },
+  })
+}
+
 
 // 컴포넌트 마운트 시 데이터 가져오기
 onMounted(() => {
   fetchFollowedUsersFeed();
+  fetchRecommendedMovies();
 });
 </script>
 
@@ -487,5 +552,88 @@ onMounted(() => {
   background: #f9f9f9;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: 20px auto;
+  font-family: Arial, sans-serif;
+}
+
+.section-title {
+  font-size: 1.5em;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.movie-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.movie-details {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 15px;
+}
+
+.movie-poster {
+  width: 120px;
+  height: auto;
+  border-radius: 8px;
+  margin-right: 15px;
+}
+
+.movie-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.user-name {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.recommended-title {
+  color: #ffa200;
+  font-weight: bold;
+}
+
+.action-button {
+  padding: 10px 20px;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s;
+}
+
+.action-button:hover {
+  background: #0056b3;
+}
+
+@media (max-width: 768px) {
+  .movie-details {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .movie-poster {
+    margin-bottom: 10px;
+    margin-right: 0;
+  }
+}
+
+.logo-placeholder {
+  max-width: 50%;
+  max-height: 50%;
+  opacity: 0.6; /* 로고가 부드럽게 보이도록 설정 */
 }
 </style>

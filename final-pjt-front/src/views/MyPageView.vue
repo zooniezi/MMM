@@ -1,49 +1,72 @@
 <template>
   <div class="px-0">
     <h1 class="page-title">{{ userName }}의 마이페이지</h1>
-
-    <div class="d-flex justify-content-between align-items-center profile-section-style">
-      <!-- 왼쪽: 프로필 정보 -->
-      <div class="profile-section">
-        <p>총 피드: {{ totalFeeds }}</p>
-        <p>
-          팔로워:
-          <span class="link" @click="openFollowModal('followers')">
-            {{ followerCount }}
-          </span>
-        </p>
-        <p class="m-0">
-          팔로잉:
-          <span class="link" @click="openFollowModal('followings')">
-            {{ followingCount }}
-          </span>
-        </p>
+    
+    <div class="profile-section-style">
+      <div>
+        <blockquote class="blockquote">
+          <p class="mb-0 fst-italic">{{ userProfile }}</p>
+        </blockquote>
       </div>
 
-      <!-- 오른쪽: 옵션 버튼 -->
-      <div class="profile-options mt-auto d-flex flex-column align-items-end">
-        <!-- 도전과제 뱃지 -->
-        <div class="badge-container d-flex justify-content-between mb-3">
-          <img
-            v-for="index in 5"
-            :key="index"
-            src="https://picsum.photos/250/250"
-            alt="뱃지"
-            class="badge-icon"
-          />
+      <div class="d-flex justify-content-between align-items-center">
+        <!-- 왼쪽: 프로필 정보 -->
+        <div class="profile-section">
+          <p>총 피드: {{ totalFeeds }}</p>
+          <p>
+            팔로워:
+            <span class="link" @click="openFollowModal('followers')">
+              {{ followerCount }}
+            </span>
+          </p>
+          <p class="m-0">
+            팔로잉:
+            <span class="link" @click="openFollowModal('followings')">
+              {{ followingCount }}
+            </span>
+          </p>
         </div>
-        <div class="d-flex ms-auto">
-          <RouterLink
-            :to="{ name: 'editUser' }"
-            class="btn btn-outline-primary me-2"
-          >
-            회원정보 수정
-          </RouterLink>
-          <button @click="goLogOut" class="btn btn-outline-danger">
-            로그아웃
-          </button>
+
+        <!-- 오른쪽: 옵션 버튼 -->
+        <div class="profile-options mt-auto d-flex flex-column align-items-end">
+          <!-- 도전과제 뱃지 -->
+          <div class="badge-container d-flex justify-content-between mb-3">
+            <div 
+              v-for="(achievement, index) in filteredAchievements" 
+              :key="index"
+              class="badge-wrapper"
+              @mouseover="hoveredIndex = index"
+              @mouseleave="hoveredIndex = null"
+            >
+              <img
+                :src="achievement.image"
+                alt="뱃지"
+                class="badge-icon"
+              />
+              <div 
+                v-if="hoveredIndex === index" 
+                class="badge-description"
+              >
+                {{ achievement.description }}
+              </div>
+            </div>
+          </div>
+
+
+          <div class="d-flex ms-auto">
+            <RouterLink
+              :to="{ name: 'editUser' }"
+              class="btn btn-outline-primary me-2"
+            >
+              회원정보 수정
+            </RouterLink>
+            <button @click="goLogOut" class="btn btn-outline-danger">
+              로그아웃
+            </button>
+          </div>
         </div>
       </div>
+
     </div>
 
     <br>
@@ -62,6 +85,15 @@
           </div>
         </div>
       </div>
+
+      <!-- 빈 공간 로고 채우기 -->
+      <div v-for="n in (3 - (feeds.length % 3))" v-if="feeds.length % 3 !== 0" :key="'placeholder-' + n" class="col">
+        <div class="card-container bg-light">
+          <img src="../assets/logo2.png" alt="로고" class="logo-placeholder" />
+        </div>
+      </div>
+
+
     </div>
 
     <!-- 피드 상세 모달 -->
@@ -201,6 +233,7 @@ const newComment = ref("");
 const commentCount = ref(0); // 댓글 개수 상태 추가
 const selectedEmoji = ref(null);
 const emojiCounts = ref({});
+const userProfile = ref("")
 
 // 팔로워/팔로잉 모달 상태
 const isFollowModalOpen = ref(false)
@@ -228,6 +261,9 @@ const getUserId = async function () {
       },
     });
     userId.value = res.data.id;
+    console.log(userId.value)
+    userProfile.value = res.data.profile
+    console.log(userProfile.value)
   } catch (err) {
     console.error(err);
   }
@@ -488,6 +524,96 @@ const deleteComment = async (commentId) => {
   }
 };
 
+// 도전과제 데이터
+const achievements = ref([
+  {
+    image: "./src/assets/achievements/01_first.png",
+    title: "산뜻한 출발",
+    description: "첫 피드를 작성합니다.",
+    achieved: true,
+    selected: true,
+  },
+  {
+    image: "./src/assets/achievements/02_aim.png",
+    title: "저격수다!",
+    description: "작성한 피드에 10개 이상의 이모지를 받습니다.",
+    achieved: false,
+    selected: false,
+  },
+  {
+    image: "./src/assets/achievements/03_4-seasons.png",
+    title: "모든 날 모든 순간",
+    description: "봄,여름,가을,겨울에 영화를 시청했습니다.",
+    achieved: false,
+    selected: false,
+  },
+  {
+    image: "./src/assets/achievements/04_alone.png",
+    title: "아무 일도 없었다...",
+    description: "혼자 10편의 영화를 감상했습니다.",
+    achieved: true,
+    selected: true,
+  },
+  {
+    image: "./src/assets/achievements/05_lover.png",
+    title: "자기야 이건 누구랑 본거야?",
+    description: "연인과 함께 10편의 영화를 감상했습니다.",
+    achieved: false,
+    selected: false,
+  },
+  {
+    image: "./src/assets/achievements/06_blacksmith.png",
+    title: "할 말을 잃었습니다",
+    description: "영화를 100편 등록했습니다.",
+    achieved: true,
+    selected: true,
+  },
+  {
+    image: "./src/assets/achievements/11_firesmith.png",
+    title: "국가권력급 영화광",
+    description: "영화를 1000편 등록했습니다.",
+    achieved: false,
+    selected: false,
+  },
+  {
+    image: "./src/assets/achievements/07_shovel.png",
+    title: "난 누군가 또 여긴 어딘가",
+    description: "아무도 등록하지 않았던 영화를 피드에 등록합니다.",
+    achieved: false,
+    selected: false,
+  },
+  {
+    image: "./src/assets/achievements/08_mystery.png",
+    title: "범인은 이안에 있어",
+    description: "피드에 '미스터리' 장르의 영화를 10개 등록합니다.",
+    achieved: true,
+    selected: true,
+  },
+  {
+    image: "./src/assets/achievements/09_horror.png",
+    title: "어떻게 지평좌표계로 고정하셨죠?",
+    description: "피드에 '호러' 장르의 영화를 10개 등록합니다.",
+    achieved: false,
+    selected: false,
+  },
+  {
+    image: "./src/assets/achievements/10_thinking.png",
+    title: "평점이 이븐하게 익지 않았어요",
+    description: "부여할 수 있는 모든 평점을 등록했습니다.",
+    achieved: true,
+    selected: false,
+  },
+]);
+
+const filteredAchievements = computed(() =>
+      achievements.value.filter(
+        (achievement) => achievement.achieved && achievement.selected
+      )
+    );
+
+    const hoveredIndex = ref(null); // 현재 호버된 인덱스를 추적
+
+
 // 컴포넌트 마운트 시 API 호출
 onMounted(async () => {
   await getUserId(); // 사용자 ID 가져오기
@@ -667,13 +793,42 @@ onMounted(async () => {
   gap: 10px;
   justify-content: center;
   align-items: center;
+  flex-wrap: wrap;
 }
+
+.badge-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 
 /* 뱃지 아이콘 */
 .badge-icon {
   width: 50px;
   height: 50px;
-  border-radius: 20%;
-  object-fit: cover;
+  object-fit: contain;
+  cursor: pointer;
+  /* background-color: black; */
+}
+
+.logo-placeholder {
+  max-width: 50%;
+  max-height: 50%;
+  opacity: 0.6; /* 로고가 부드럽게 보이도록 설정 */
+}
+
+.badge-description {
+  position: absolute;
+  top: 60px; /* 아이콘 아래에 표시 */
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: white;
+  border-radius: 5px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 </style>
