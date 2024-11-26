@@ -9,7 +9,8 @@ urlpatterns = [
 
     path('feed/create/', views.FeedCreateView.as_view(), name='feed_create'),
     path('feeds/<int:user_id>/', views.user_feed_list, name='user_feed_list'),
-    path('feeds/followed/', views.followed_users_feed_list, name='followed_users_feed_list'),  
+    path('feeds/followed/', views.followed_users_feed_list, name='followed_users_feed_list'),
+    path('feeds/recommend/<int:user_id>/', views.feed_recommend_at_home, name='feed_recommend_at_home'),
 
     # 댓글 조회 및 생성
     path('feeds/<int:feed_id>/comments/', views.comment_list_create, name='comment_list_create'),

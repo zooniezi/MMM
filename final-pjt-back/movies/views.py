@@ -37,6 +37,20 @@ class MovieCreateView(APIView):
 
 ##################################################################################
 
+def get_movie_by_id(request):
+    movie = Movie.objects.get(id=request.movie_id)
+    data = {
+        'id': movie.id,
+        'original_title': movie.original_title,
+        'overview': movie.overview,
+        'poster_path': movie.poster_path,
+        'title': movie.title,
+        'vote_average': movie.vote_average,
+    }
+
+    return JsonResponse(data, safe=False)
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 # 피드 페이지 피드 출력용 (팔로우한 사람들의 피드 최신순 출력)
@@ -101,6 +115,95 @@ def user_feed_list(request, user_id):
         })
 
     return JsonResponse(data, safe=False)
+
+# 프로필 페이지 피드 출력용
+def feed_recommend_at_home(request, user_id):
+    # 사용자 ID에 해당하는 Feed 데이터 가져오기
+    feeds = Feed.objects.filter(user_id=user_id)
+    genre_check = {
+        28: 0,
+        12: 0,
+        16: 0,
+        35: 0,
+        80: 0,
+        99: 0,
+        18: 0,
+        10751: 0,
+        14: 0,
+        36: 0,
+        27: 0,
+        10402: 0,
+        9648: 0,
+        10749: 0,
+        878:0,
+        10770:0,
+        53:0,
+        10752:0,
+        37:0,
+    }
+    movie_id_check = {
+        28: [],
+        12: [],
+        16: [],
+        35: [],
+        80: [],
+        99: [],
+        18: [],
+        10751: [],
+        14: [],
+        36: [],
+        27: [],
+        10402: [],
+        9648: [],
+        10749: [],
+        878:[],
+        10770:[],
+        53:[],
+        10752:[],
+        37:[],
+    }
+    # JSON 형태로 반환할 데이터 구성
+    data = []
+    for feed in feeds:
+        # Movie 데이터 가져오기 (포스터 url)
+        for genre in feed.genre_ids:
+            genre_check[genre] += 1
+            movie_id_check[genre].append(feed.movie_id)
+
+    most_viewed_genres = random.choice([key for key,value in genre_check.items() if max(genre_check.values()) == value])
+    def get_random_feed(genre_ids, user_id):
+        query = ~Q(user_id=user_id)
+        randomfeeds = Feed.objects.filter(query)
+        choosefeeds = []
+        for feed in randomfeeds:
+            feed_genre_ids = json.loads(feed.genre_ids) if isinstance(feed.genre_ids, str) else feed.genre_ids
+            if most_viewed_genres in feed_genre_ids:
+                choosefeeds.append(feed)
+        return random.choice(choosefeeds)
+    data = []
+
+    chosen_feed = get_random_feed(most_viewed_genres, user_id)
+    related_feed_movie_id = random.choice(movie_id_check[most_viewed_genres])
+    chosen_movie_info = Movie.objects.get(id=chosen_feed.movie_id)
+    related_movie_title = Movie.objects.get(id=related_feed_movie_id).title
+
+    data = [
+        {
+            "movie_id" : chosen_movie_info.id,
+            "movie_title" : chosen_movie_info.title,
+            "movie_overview" : chosen_movie_info.overview,
+            "movie_posterpath" : chosen_movie_info.poster_path,
+            "related_movie_title" : related_movie_title,
+        }
+    ]
+
+    return JsonResponse(data, safe=False)
+
+
+
+
+
+
 
 ##################################################################################
 ############################## 추천 알고리즘 #####################################
@@ -255,7 +358,7 @@ def recommend_movies_upgrade(request):
     }
     for movie in movies
     ]
-    print(len(data))
+    random.shuffle(data)
     return JsonResponse(data, safe=False)
 
 
