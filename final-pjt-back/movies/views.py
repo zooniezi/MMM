@@ -103,6 +103,106 @@ def user_feed_list(request, user_id):
     # 사용자 ID에 해당하는 Feed 데이터 가져오기
     feeds = Feed.objects.filter(user_id=user_id)
 
+    # 도전과제 8~26 : 장르별 영화 10개 등록
+    mystery_feeds = feeds.filter(genre_ids__regex=r'\b9648\b').count()
+    action_feeds = feeds.filter(genre_ids__regex=r'\b28\b').count()
+    adventure_feeds = feeds.filter(genre_ids__regex=r'\b12\b').count()
+    animation_feeds = feeds.filter(genre_ids__regex=r'\b16\b').count()
+    comedy_feeds = feeds.filter(genre_ids__regex=r'\b35\b').count()
+    crime_feeds = feeds.filter(genre_ids__regex=r'\b80\b').count()
+    documentary_feeds = feeds.filter(genre_ids__regex=r'\b99\b').count()
+    drama_feeds = feeds.filter(genre_ids__regex=r'\b18\b').count()
+    family_feeds = feeds.filter(genre_ids__regex=r'\b10751\b').count()
+    fantasy_feeds = feeds.filter(genre_ids__regex=r'\b14\b').count()
+    history_feeds = feeds.filter(genre_ids__regex=r'\b36\b').count()
+    horror_feeds = feeds.filter(genre_ids__regex=r'\b27\b').count()
+    musical_feeds = feeds.filter(genre_ids__regex=r'\b10402\b').count()
+    romance_feeds = feeds.filter(genre_ids__regex=r'\b10749\b').count()
+    sf_feeds = feeds.filter(genre_ids__regex=r'\b878\b').count()
+    tvmovie_feeds = feeds.filter(genre_ids__regex=r'\b10770\b').count()
+    thriller_feeds = feeds.filter(genre_ids__regex=r'\b53\b').count()
+    war_feeds = feeds.filter(genre_ids__regex=r'\b10752\b').count()
+    western_feeds = feeds.filter(genre_ids__regex=r'\b37\b').count()
+
+    # 조건에 따라 Achievement 생성
+    if mystery_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=8)
+
+    if horror_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=9)
+
+    if action_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=10)
+
+    if adventure_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=11)
+
+    if animation_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=12)
+
+    if comedy_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=13)
+
+    if crime_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=14)
+
+    if documentary_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=15)
+
+    if drama_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=16)
+
+    if family_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=17)
+
+    if fantasy_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=18)
+
+    if history_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=19)
+
+    if musical_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=20)
+
+    if romance_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=21)
+
+    if sf_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=22)
+
+    if tvmovie_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=23)
+
+    if thriller_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=24)
+
+    if war_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=25)
+
+    if western_feeds >= 10:
+        Achievement.objects.get_or_create(user=user, achievement_id=26)
+
+    # 도전과제 - 27 : 모든 평점 등록
+    rating_one_exists = feeds.filter(rating=1).exists()
+    rating_two_exists = feeds.filter(rating=2).exists()
+    rating_three_exists = feeds.filter(rating=3).exists()
+    rating_four_exists = feeds.filter(rating=4).exists()
+    rating_five_exists = feeds.filter(rating=5).exists()
+    has_all_rating = all([rating_one_exists,rating_two_exists,rating_three_exists,rating_four_exists,rating_five_exists])
+    if has_all_rating:
+        Achievement.objects.get_or_create(user=user, achievement_id=27)
+
+    # 도전과제 - 3 : 계절별로 영화 보기
+    winter_exists = feeds.filter(watch_date__month__in=[12, 1, 2]).exists()
+    spring_exists = feeds.filter(watch_date__month__in=[3, 4, 5]).exists()
+    summer_exists = feeds.filter(watch_date__month__in=[6, 7, 8]).exists()
+    autumn_exists = feeds.filter(watch_date__month__in=[9, 10, 11]).exists()
+
+    # 모든 계절이 존재하는지 확인
+    has_all_seasons = all([winter_exists, spring_exists, summer_exists, autumn_exists])
+    if has_all_seasons:
+        Achievement.objects.get_or_create(user=user, achievement_id=3)
+
     # 도전과제 - 6,11 : 영화 등록 수 100개, 1000개 돌파
     feed_count = feeds.count()
     if feed_count >= 100:
@@ -111,7 +211,6 @@ def user_feed_list(request, user_id):
         Achievement.objects.get_or_create(user=user, achievement_id=11)
     # 도전과제 - 4: 혼자서 영화 10개 이상 보기
     feed_count = Feed.objects.filter(user_id=user_id,watch_with_who='혼자').count()
-    print(feed_count)
     if feed_count >= 10:
         Achievement.objects.get_or_create(user=user, achievement_id=4)
     # 도전과제 - 5: 연인과 영화 10개 이상 보기
@@ -233,15 +332,14 @@ def feed_recommend_at_home(request, user_id):
             feed_genre_ids = json.loads(feed.genre_ids) if isinstance(feed.genre_ids, str) else feed.genre_ids
             if most_viewed_genres in feed_genre_ids:
                 choosefeeds.append(feed)
-        print(choosefeeds)
+
         return random.choice(choosefeeds)
     data = []
 
     chosen_feed = get_random_feed(most_viewed_genres, user_id)
     related_feed_movie_id = random.choice(movie_id_check[most_viewed_genres])
     chosen_movie_info = Movie.objects.get(id=chosen_feed.movie_id)
-    print(chosen_feed)
-    print(chosen_movie_info)
+
     related_movie_title = Movie.objects.get(id=related_feed_movie_id).title
 
     data = [
@@ -343,8 +441,8 @@ def recommend_movies_upgrade(request):
     matched_feeds = get_matched_feeds(watch_time, watch_with_who, genre_ids, user_id)
     
     # 확인용 
-    print('similar feeds found : ',len(similar_feeds))
-    print('matched_feeds found : ', len(matched_feeds))
+    # print('similar feeds found : ',len(similar_feeds))
+    # print('matched_feeds found : ', len(matched_feeds))
     
     # 중복된 영화는 제외하고 추천
     recommended_movies = {}
@@ -386,7 +484,6 @@ def recommend_movies_upgrade(request):
 
     # 실행
     rating_ranges = get_rating_ranges(recommend_movies_candidate)
-    print(rating_ranges)
 
     can_recommend_index = rating_ranges[int(selected_rating)][1]
     
@@ -564,6 +661,9 @@ def toggle_emoji(request, feed_id):
     if request.method == 'GET':
         try:
             emoji = Emoji.objects.get(user=user, feed=feed)
+            # 도전과제 - 2: 이모지 10개 이상 받기
+            if emoji.count() >= 10:
+                Achievement.objects.get_or_create(user=user, achievement_id=2)
             return Response({'emoji': emoji.emoji}, status=status.HTTP_200_OK)
         except Emoji.DoesNotExist:
             return Response({'emoji': None}, status=status.HTTP_200_OK)
