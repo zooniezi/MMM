@@ -118,8 +118,26 @@ def user_feed_list(request, user_id):
 
 # 프로필 페이지 피드 출력용
 def feed_recommend_at_home(request, user_id):
+    
+    if not Feed.objects.filter(user_id=user_id).exists():
+        feeds = Feed.objects.all().order_by('-rating')[:100]
+        random_feed = random.choice(feeds)
+        random_movie_info = Movie.objects.get(id=random_feed.movie_id)
+        data = [
+            {
+                "movie_id" : random_movie_info.id,
+                "movie_title" : random_movie_info.title,
+                "movie_overview" : random_movie_info.overview,
+                "movie_posterpath" : random_movie_info.poster_path,
+                "related_movie_title" : None,
+            }
+        ]
+        return JsonResponse(data,safe=False)
+
     # 사용자 ID에 해당하는 Feed 데이터 가져오기
+    
     feeds = Feed.objects.filter(user_id=user_id)
+    
     genre_check = {
         28: 0,
         12: 0,
@@ -179,12 +197,15 @@ def feed_recommend_at_home(request, user_id):
             feed_genre_ids = json.loads(feed.genre_ids) if isinstance(feed.genre_ids, str) else feed.genre_ids
             if most_viewed_genres in feed_genre_ids:
                 choosefeeds.append(feed)
+        print(choosefeeds)
         return random.choice(choosefeeds)
     data = []
 
     chosen_feed = get_random_feed(most_viewed_genres, user_id)
     related_feed_movie_id = random.choice(movie_id_check[most_viewed_genres])
     chosen_movie_info = Movie.objects.get(id=chosen_feed.movie_id)
+    print(chosen_feed)
+    print(chosen_movie_info)
     related_movie_title = Movie.objects.get(id=related_feed_movie_id).title
 
     data = [
